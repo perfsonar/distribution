@@ -1,0 +1,8 @@
+Things to do:
+
+Make the sync process atomic, so the storage area only changes when an
+rsync is complete.  Possible sources of inspiration:
+
+ - https://lists.samba.org/archive/rsync/2008-May/020879.html
+ - https://github.com/rackerlabs/cloudfiles-rsync/blob/master/support/atomic-rsync
+
