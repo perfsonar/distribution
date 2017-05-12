@@ -1,0 +1,45 @@
+#
+# Common variables and functions
+#
+
+WHEREAMI=$(dirname $0)
+WHEREAMI=$(cd "$(dirname $0)" && pwd)
+WHOAMI=$(basename $0)
+
+
+PREFIX="perfsonar-distribution"
+
+TOP="${WHEREAMI}/.."
+KEYS="${TOP}/keys"
+INCOMING="${TOP}/incoming"
+
+DOT_SSH="${HOME}/.ssh"
+AUTHORIZED_KEYS="${DOT_SSH}/authorized_keys"
+
+
+die()
+{
+    echo "$*" 1>&2
+    exit 1
+}
+
+
+validate_dir()
+{
+    echo "$1" | fgrep -q '/' \
+	&& die "No absolute or relative paths allowed."
+    [ "$1" != "rrsync" ] \
+	|| die "The name 'rrsync' cannot be used."
+    true
+}
+
+
+key_tag()
+{
+    echo "${PREFIX}-$1"
+}
+
+remove_key()
+{
+    sed -i -e "/ ${PREFIX}-${DIR}\$/d" "${AUTHORIZED_KEYS}"
+}

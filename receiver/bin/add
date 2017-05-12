@@ -1,0 +1,62 @@
+#!/bin/sh -e
+#
+# Add a directory to the distribution set
+#
+# Usage:  add NAME
+#
+
+. $(dirname $0)/common
+
+[ $# -ne 1 ] && die "Usage: ${WHOAMI} NAME"
+
+DIR="$1"
+
+validate_dir "${DIR}"
+
+INCOMING_DIR="${INCOMING}/${DIR}"
+
+# Doesn't matter if these already exist.
+mkdir -p "${INCOMING_DIR}" "${KEYS}" 
+
+PRIV_KEY="${KEYS}/${DIR}"
+PUB_KEY="${PRIV_KEY}.pub"
+AUTH_FILE="${PRIV_KEY}.auth"
+TAG=$(key_tag "${DIR}")
+
+# Generate a key if there isn't one
+
+if [ ! -e "${KEYS}/${DIR}" ]
+then
+	echo
+	echo "New key for ${DIR}:"
+	ssh-keygen -q -f "${PRIV_KEY}" -C "${TAG}"
+	chmod 400 "${PRIV_KEY}"
+	chmod 444 "${PUB_KEY}"
+fi
+
+# Authorize the key
+
+printf "%s%s" \
+	"command=\"${INCOMING}/rrsync -wo ${INCOMING_DIR}\"" \
+	",no-agent-forwarding,no-port-forwarding,no-pty,no-user-rc,no-X11-forwarding " \
+	> "${AUTH_FILE}"
+cat "${PUB_KEY}" >> "${AUTH_FILE}"
+
+if [ ! -d "${DOT_SSH}" ]
+then
+    mkdir -p "${DOT_SSH}"
+    chmod 700 "${DOT_SSH}"
+fi
+
+if [ ! -f "${AUTHORIZED_KEYS}" ]
+then
+    touch "${AUTHORIZED_KEYS}"
+    chmod 700 "${AUTHORIZED_KEYS}"
+fi
+
+remove_key "${DIR}"
+cat "${AUTH_FILE}" >> "${AUTHORIZED_KEYS}"
+
+rm -f "${AUTH_FILE}"
+
+exit 0

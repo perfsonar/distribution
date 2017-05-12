@@ -1,0 +1,27 @@
+#!/bin/sh -e
+#
+# Remove a directory from the distribution set
+#
+# Usage:  remove NAME
+#
+
+. $(dirname $0)/common
+
+[ $# -eq 1 ] || die "Usage: ${WHOAMI} NAME"
+
+DIR="$1"
+
+validate_dir "${DIR}"
+
+# De-authorize the key
+remove_key "${DIR}"
+
+# Remove all of the related files
+
+rm -rf \
+    "${KEYS}/${DIR}" \
+    "${KEYS}/${DIR}.pub" \
+    "${KEYS}/${DIR}.auth" \
+    "${INCOMING}/${DIR}"
+
+exit 0
