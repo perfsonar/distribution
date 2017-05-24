@@ -1,0 +1,29 @@
+#
+# perfSONAR Repository Directory Tree List
+#
+
+# TODO: Enable commented-out lines when there are storage areas in the
+# receiver for them.
+
+# Path in Repo			Path in Receiver
+
+#apt    	  			apt
+#yum				yum
+
+# TODO:  Enable these when available
+#production/debian/jessie	production-debian-jessie
+#production/debian/wheezy	production-debian-wheezy
+
+#production/el/6/i386		production-el-6-i386
+#production/el/6/x86_64		production-el-6-x86_64
+#production/el/7/x86_64		production-el-7-x86_64
+
+#staging/el/6/i386		staging-el-6-i386
+#staging/el/6/x86_64		staging-el-6-x86_64
+#staging/el/7/x86_64		staging-el-7-x86_64
+
+nightly/el/6/i386		nightly-el-6-i386
+nightly/el/6/x86_64		nightly-el-6-x86_64
+nightly/el/7/x86_64		nightly-el-7-x86_64
+
+#vault				vault

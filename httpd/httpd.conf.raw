@@ -1,0 +1,38 @@
+<VirtualHost *>
+    ServerAdmin root@internet2.edu
+    DocumentRoot /home/htdocs/downloads.perfsonar.net
+    ServerName downloads.perfsonar.net
+    ErrorLog logs/downloads.perfsonar.net-error_log
+    CustomLog logs/downloads.perfsonar.net-access_log combined
+
+    # Redirect / to www.perfsonar.net for now
+    RewriteEngine on
+    RewriteRule ^/$ http://www.perfsonar.net/about/where-can-it-be-downloaded/
+
+    # Current Repo
+    Alias /repo/ "__REPO__"
+    <Location /repo>
+        Require all granted
+        Options FollowSymLinks
+    </Location>
+
+    #
+    # Legacy Directories
+    #
+
+    # Debian Redirects 
+    ProxyPass /debian http://ps-deb-repo.qalab.geant.net/repository
+    ProxyPassReverse /debian http://ps-deb-repo.qalab.geant.net/repository
+
+    # Toolkit directory
+    ProxyPass /toolkit http://software.internet2.edu/pS-Performance_Toolkit
+    ProxyPassReverse /toolkit http://software.internet2.edu/pS-Performance_Toolkit
+
+    # web100 directory
+    ProxyPass /redhat/web100_kernel/main http://software.internet2.edu/web100_kernel/main
+    ProxyPassReverse /redhat/web100_kernel/main http://software.internet2.edu/web100_kernel/main
+
+    ProxyPass /redhat/web100_kernel/vault http://software.internet2.edu/web100_kernel/vault
+    ProxyPassReverse /redhat/web100_kernel/vault http://software.internet2.edu/web100_kernel/vault
+
+</VirtualHost>
