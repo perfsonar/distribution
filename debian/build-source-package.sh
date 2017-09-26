@@ -138,7 +138,7 @@ fi
 # We package the upstream sources (tarball) from git
 if [ "$pscheduler_dir_level" ]; then
     # Directly calling git archive if pscheduler
-    # Native package don't have upstream version, we don't need to create the upstream tarball
+    # Native packages don't have upstream version, we don't need to create the upstream tarball
     if ! grep -q '(native)' debian/source/format ; then
         # Backward kludge...
         cd ../$pscheduler_dir_level

@@ -17,10 +17,17 @@ if [ ! -d $pkg ]; then
 fi
 
 # Special packages
-if [ "$pkg" = "pscheduler-rpm" ]; then
-    echo "$pkg doesn't have a Debian form, we skip it."
-    exit
-fi
+case "${pkg}" in
+    "pscheduler-rpm")
+        echo "$pkg doesn't exist here for Debian, we won't check its version."
+        exit
+        ;;
+
+    "python-psycopg2")
+        echo "$pkg doesn't exist here for CentOS, we won't check its version."
+        exit
+        ;;
+esac
 
 # Getting RPM version number
 if [ -f $pkg/$pkg.spec ]; then
