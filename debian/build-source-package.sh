@@ -36,6 +36,7 @@ if [ ! -f debian/gbp.conf ]; then
         fi
         # We take the package name from the changelog entry, as this is not necessarily the same as the directory name...
         cd ${pscheduler_dir_level}
+        package_dir=$package
         package=`awk 'NR==1 {print $1}' debian/changelog`
     else
         echo
@@ -143,13 +144,13 @@ if [ "$pscheduler_dir_level" ]; then
         cd ../$pscheduler_dir_level
         # We first check that the RPM version matches the DEB version (but not for minor-packages)
         if ! git remote -v show | grep minor-packages ; then
-            if ! distribution/debian/check-deb-rpm-version.sh ${package} ; then
+            if ! distribution/debian/check-deb-rpm-version.sh ${package_dir} ; then
                 pwd
                 exit 1
             fi
         fi
         # And forward kludge again
-        cd ${package}
+        cd ${package_dir}
         if ! [ -d debian ]; then
             cd */debian/..
         fi
