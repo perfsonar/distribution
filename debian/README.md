@@ -26,10 +26,12 @@ TODO: Use autopkgtests after a package is built.
 ## Release
 
 The `make-release.sh` script is to be used when releasing a Debian package.
-It must be run in the debian/ branch you want to use for the release. When
+It must be run in the debian/version branch you want to use for the release. When
 you run it, it will:
  - check the version of the package in the debian/changelog
  - verify a corresponding git tag exist in the upstream branch
+ - refresh the quilt patches
+ - updates the distribution submodule to latest commit
  - updates the debian changelog to the new release
  - git commit and tag on the debian branch
 

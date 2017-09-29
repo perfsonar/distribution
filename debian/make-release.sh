@@ -2,28 +2,33 @@
 # Usage info
 show_help() {
     cat << EOF
-        Usage: ${0##*/} [-a]  [-c commit_options] [-n] [-t tag_options] [-v]
-        This script releases a new version (final or RC) of a perfSONAR Debian package.
-        It looks for the version of the package in the debian/changelog file. It creates a
-        new git commit with all files ready to be commited and add the corresponding tag.
-        The file debian/changelog is automatically modified by this script and added to the
-        git commit.
 
-        Two environment variables can be used to generate the changelog:
-            - DEBEMAIL: the email mentioned in the changelog signature
-            - DEBFULLNAME: the name mentioned in the changelog signature
-        If those 2 variables are not defined, then your git user.email and user.name will
-        be used instead.
+    Usage: ${0##*/} [-admnqv] [-c commit_options] [-t tag_options]
 
-        You can call it with the following args:
-            -a: add modified files to the commit (use `git commit -a`)
-            -c: additional git options to be passed to `git commit`
-            -d: don't update distribution submodule
-            -m: releases a minor package
-            -n: performs a dry-run
-            -q: don't refresh quilt patches
-            -t: additional git options to be passed to `git tag`
-            -v: verbose
+    This script releases  a  new  version  (final,  RC,  beta  or  alpha)  of  a
+    perfSONAR Debian package. It looks for the version of  the  package  in  the
+    debian/changelog file. It creates a new git  commit  with  all  files  ready
+    to be commited and add the corresponding tag.
+
+    The file debian/changelog is  automatically  modified  by  this  script  and
+    added to the git commit.  Debian  quilt  patches  are  refreshed  and  added
+    as well, as is the distribution submodule.
+
+    Two environment variables can be used to generate the changelog:
+        - DEBEMAIL: the email mentioned in the changelog signature
+        - DEBFULLNAME: the name mentioned in the changelog signature
+    If those  2  variables  are  not  defined,  then  your  git  user.email  and
+    user.name will be used instead.
+
+    You can call this script with the following args:
+        -a: add modified files to the commit (use \`git commit -a\`)
+        -c: additional git options to be passed to \`git commit\`
+        -d: don't update distribution submodule
+        -m: releases a minor package
+        -n: performs a dry-run
+        -q: don't refresh quilt patches
+        -t: additional git options to be passed to \`git tag\`
+        -v: verbose
 EOF
 }
 
@@ -93,7 +98,7 @@ if grep -q '(native)' debian/source/format ; then
     # Native package don't have release numbers, only a version number
     VERSION=${PKG_VERSION}
     # We don't have an upstream version either
-    UPSTREAM_VERSION=${VERSION//\~*/}}
+    UPSTREAM_VERSION=${VERSION//\~*/}
     TAG_VERSION=${PKG_VERSION/\~bpo/_bpo}
     TAG_VERSION=${TAG_VERSION//\~/-}
     if [ "${minor_pkg}" -eq 1 ]; then
@@ -177,17 +182,9 @@ if [[ $quiltrefresh -eq 1 && -s debian/patches/series ]]; then
     QUILT_PATCHES="debian/patches"
     QUILT_REFRESH_ARGS="-p ab --no-timestamps --no-index"
     quilt --quiltrc - push -aq --refresh > /dev/null
-    quilt pop -aq > /dev/nul
+    quilt pop -aq > /dev/null
     git add debian/patches
 fi
-
-# Actually change the debian/changelog file
-n=`grep -nm 1 " -- " debian/changelog | awk -F ':' '{print $1}'`
-TMP_FILE=`mktemp`
-sed "${n}s/^ -- .* [+-][0-9]\{4\}/${FINISH_LINE}/" debian/changelog > $TMP_FILE
-sed "1s/ UNRELEASED;/ $PS_DEB_REP;/" $TMP_FILE > debian/changelog
-/bin/rm $TMP_FILE
-git add debian/changelog
 
 if [[ $updatedistribution -eq 1 ]]; then
     # Update the distribution submodule to latest master commit
@@ -203,10 +200,18 @@ if [[ $updatedistribution -eq 1 ]]; then
 fi
 git add distribution
 
+# Actually change the debian/changelog file
+n=`grep -nm 1 " -- " debian/changelog | awk -F ':' '{print $1}'`
+TMP_FILE=`mktemp`
+sed "${n}s/^ -- .* [+-][0-9]\{4\}/${FINISH_LINE}/" debian/changelog > $TMP_FILE
+sed "1s/ UNRELEASED;/ $PS_DEB_REP;/" $TMP_FILE > debian/changelog
+/bin/rm $TMP_FILE
+git add debian/changelog
+
 echo
 # And perform the commit and the tagging
 git commit ${commit_a} ${commit_options} -m "Releasing ${PKG} (${PKG_VERSION})"
 git tag ${DEBIAN_TAG}
 
 echo
-echo "If you're happy with the commit and tag above, you just need to push them away!"
+echo "If you're happy with the commit and tag above, you just need to push that away!"
