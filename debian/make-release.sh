@@ -42,14 +42,14 @@ verbose() {
 v=0
 dry_run=0
 minor_pkg=0
-dontupdatedistribution=0
+updatedistribution=1
 
 # Parsing options
 while getopts "ac:dmnt:v" OPT; do
     case $OPT in
         a) commit_a="-a" ;;
         c) commit_options=$OPTARG ;;
-        d) dontupdatedistribution=1 ;;
+        d) updatedistribution=0 ;;
         m) minor_pkg=1 ;;
         n) dry_run=1 ;;
         t) tag_options=$OPTARG ;;
@@ -156,9 +156,7 @@ verbose "The package signature line will be:"
 # Make the git commit and tag
 verbose "We're now going to release \033[1;32m${PKG}\033[0m at \033[1;32m${PKG_VERSION}\033[0m for \033[1;32m${PS_DEB_REP}\033[0m to the local git repo."
 verbose "This release will be tagged as \033[1;32m${DEBIAN_TAG}\033[0m."
-if [[ $dontupdatedistribution -eq 0 ]]; then
-    verbose "We will also update the distribution submodule to latest commit on master."
-fi
+[ $updatedistribution -eq 0 ] ||  verbose "We will also update the distribution submodule to latest commit on master."
 if [[ $dry_run -eq 1 ]]; then
     v=1
     verbose "\033[1mThis is a dry run, I haven't touch a thing.\033[0m"
@@ -171,12 +169,16 @@ sed "${n}s/^ -- .* [+-][0-9]\{4\}/${FINISH_LINE}/" debian/changelog > $TMP_FILE
 sed "1s/ UNRELEASED;/ $PS_DEB_REP;/" $TMP_FILE > debian/changelog
 /bin/rm $TMP_FILE
 git add debian/changelog
-if [[ $dontupdatedistribution -eq 0 ]]; then
+if [[ $updatedistribution -eq 1 ]]; then
     # Update the distribution submodule to latest master commit
     verbose "Updating the distribution submodule to latest commit on master."
     cd distribution
     git checkout -q master
-    git pull
+    if [[ $v -eq 0 ]]; then
+        git pull
+    else
+        git pull -q
+    fi
     cd ..
 fi
 git add distribution
