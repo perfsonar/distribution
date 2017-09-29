@@ -165,6 +165,12 @@ sed "${n}s/^ -- .* [+-][0-9]\{4\}/${FINISH_LINE}/" debian/changelog > $TMP_FILE
 sed "1s/ UNRELEASED;/ $PS_DEB_REP;/" $TMP_FILE > debian/changelog
 /bin/rm $TMP_FILE
 git add debian/changelog
+# Update the distribution submodule to latest master commit
+cd distribution
+git checkout master
+git pull
+cd ..
+git add distribution
 # And perform the commit and the tagging
 git commit ${commit_a} ${commit_options} -m "Releasing ${PKG} (${PKG_VERSION})"
 git tag ${DEBIAN_TAG}
