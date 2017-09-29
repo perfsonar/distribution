@@ -90,7 +90,7 @@ if grep -q '(native)' debian/source/format ; then
     # Native package don't have release numbers, only a version number
     VERSION=${PKG_VERSION}
     # We don't have an upstream version either
-    UPSTREAM_VERSION=${VERSION}
+    UPSTREAM_VERSION=${VERSION//\~*/}}
     TAG_VERSION=${PKG_VERSION/\~bpo/_bpo}
     TAG_VERSION=${TAG_VERSION//\~/-}
     if [ "${minor_pkg}" -eq 1 ]; then
