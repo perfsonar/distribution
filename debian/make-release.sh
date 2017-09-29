@@ -159,14 +159,14 @@ verbose "The package signature line will be:"
 # Make the git commit and tag
 verbose "We're now going to release \033[1;32m${PKG}\033[0m at \033[1;32m${PKG_VERSION}\033[0m for \033[1;32m${PS_DEB_REP}\033[0m to the local git repo."
 verbose "This release will be tagged as \033[1;32m${DEBIAN_TAG}\033[0m."
-if [[ $updatedistribution -eq 1 ]]; then
-    verbose "We will update the distribution submodule to latest commit on master."
-fi
-if [[ $quiltrefresh -eq 1 && -d debian/patches ]]; then
-    verbose "We will try to refresh quilt patches to latest merge."
-fi
 if [[ $dry_run -eq 1 ]]; then
     v=1
+    if [[ $quiltrefresh -eq 1 && -d debian/patches ]]; then
+        verbose "We will try to refresh quilt patches to latest merge."
+    fi
+    if [[ $updatedistribution -eq 1 ]]; then
+        verbose "We will update the distribution submodule to latest commit on master."
+    fi
     verbose "\033[1mThis is a dry run, I haven't touch a thing.\033[0m"
     exit
 fi
