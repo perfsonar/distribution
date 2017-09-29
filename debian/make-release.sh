@@ -177,9 +177,9 @@ if [[ $updatedistribution -eq 1 ]]; then
     cd distribution
     git checkout -q master
     if [[ $v -eq 0 ]]; then
-        git pull
-    else
         git pull -q
+    else
+        git pull
     fi
     cd ..
 fi
