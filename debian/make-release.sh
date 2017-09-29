@@ -157,16 +157,16 @@ verbose "The package signature line will be:"
 [ $v -eq 0 ] || printf "${FINISH_LINE}\n"
 
 # Make the git commit and tag
-verbose "We're now going to release \033[1;32m${PKG}\033[0m at \033[1;32m${PKG_VERSION}\033[0m for \033[1;32m${PS_DEB_REP}\033[0m to the local git repo."
-verbose "This release will be tagged as \033[1;32m${DEBIAN_TAG}\033[0m."
+echo -e "We're now going to release \033[1;32m${PKG}\033[0m at \033[1;32m${PKG_VERSION}\033[0m for \033[1;32m${PS_DEB_REP}\033[0m to the local git repo."
+echo -e "This release will be tagged as \033[1;32m${DEBIAN_TAG}\033[0m."
 if [[ $dry_run -eq 1 ]]; then
-    v=1
     if [[ $quiltrefresh -eq 1 && -d debian/patches ]]; then
         verbose "We will try to refresh quilt patches to latest merge."
     fi
     if [[ $updatedistribution -eq 1 ]]; then
         verbose "We will update the distribution submodule to latest commit on master."
     fi
+    v=1
     verbose "\033[1mThis is a dry run, I haven't touch a thing.\033[0m"
     exit
 fi
@@ -176,8 +176,8 @@ if [[ $quiltrefresh -eq 1 && -s debian/patches/series ]]; then
     verbose "Trying to refresh quilt patches to latest merge."
     QUILT_PATCHES="debian/patches"
     QUILT_REFRESH_ARGS="-p ab --no-timestamps --no-index"
-    quilt --quiltrc - push -aq --refresh
-    quilt pop -aq
+    quilt --quiltrc - push -aq --refresh > /dev/null
+    quilt pop -aq > /dev/nul
     git add debian/patches
 fi
 
@@ -203,6 +203,7 @@ if [[ $updatedistribution -eq 1 ]]; then
 fi
 git add distribution
 
+echo
 # And perform the commit and the tagging
 git commit ${commit_a} ${commit_options} -m "Releasing ${PKG} (${PKG_VERSION})"
 git tag ${DEBIAN_TAG}
