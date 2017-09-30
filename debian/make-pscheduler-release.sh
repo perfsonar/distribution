@@ -105,7 +105,8 @@ VERSION=${OUT%% *}
 TAG=${OUT##* }
 cd ..
 verbose ""
-echo "All looks fine, I will release pscheduler ${VERSION} with tag ${TAG}"
+echo -e "All looks fine, we're now going to release \033[1;32mpscheduler\033[0m at \033[1;32m${VERSION}\033[0m to the local git repo."
+echo -e "This release will be tagged as \033[1;32m${TAG}\033[0m."
 if [[ $dry_run -eq 1 ]]; then
     v=1
     if [[ $update_distribution -eq 1 ]]; then
@@ -135,3 +136,4 @@ git commit ${commit_a} ${commit_options} -m "Releasing pscheduler (${VERSION})"
 git tag ${tag_options} ${TAG}
 echo
 echo "If you're happy with the commit and tag above, you just need to push that away!"
+
