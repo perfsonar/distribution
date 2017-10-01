@@ -10,6 +10,13 @@ show_help() {
 
     If all goes well, a new commit and a tag are made and added to the repository.
 
+    The list of pscheduler packages should be pscheduler-* python-pscheduler
+
+    Before calling this script, you need to have the debian/changelog files ready with
+    the next version string prepared.  To do that, you probably want to use a good
+    editor and parse the following files:
+        pscheduler-*/debian/changelog pscheduler-*/*/debian/changelog python-pscheduler/pscheduler/debian/changelog
+
     You can call this script with the following args:
         -a: add modified files to the commit (use \`git commit -a\`)
         -c: additional git options to be passed to \`git commit\`
