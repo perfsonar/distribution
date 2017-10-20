@@ -192,6 +192,9 @@ fi
 if [[ $update_distribution -eq 1 ]]; then
     # Update the distribution submodule to latest master commit
     verbose "Updating the distribution submodule to latest commit on master."
+    if [ "${minor_pkg}" -eq 1 ]; then
+        cd ..
+    fi
     cd distribution
     git checkout -q master
     if [[ $v -eq 0 ]]; then
@@ -201,6 +204,9 @@ if [[ $update_distribution -eq 1 ]]; then
     fi
     cd ..
     git add distribution
+    if [ "${minor_pkg}" -eq 1 ]; then
+        cd ${PKG}
+    fi
 fi
 
 # Actually change the debian/changelog file
