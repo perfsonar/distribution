@@ -7,10 +7,12 @@ show_help() {
 
     This script makes a pscheduler release. It loops on all pscheduler Debian packages
     and check if the package is in a releasable state by calling make-release.sh
+    It also checks if dependencies to python-pscheduler are the same in the RPM and
+    DEB packages of pscheduler-core and pscheduler-server.
 
     If all goes well, a new commit and a tag are made and added to the repository.
 
-    The list of pscheduler packages should be pscheduler-* python-pscheduler
+    The list of pscheduler packages used by this script is "pscheduler-* python-pscheduler"
 
     Before calling this script, you need to have the debian/changelog files ready with
     the next version string prepared.  To do that, you probably want to use a good
@@ -69,6 +71,18 @@ while getopts "ac:dnt:v" OPT; do
 done
 shift $((OPTIND-1))
 
+# Check dependencies are good for python-pscheduler in pscheduler-core and pscheduler-server
+p_dep_list="pscheduler-core pscheduler-server"
+verbose "Checking python-pscheduler dependencies in $p_dep_list are equal for RPM and DEB."
+for p in pscheduler-core pscheduler-server; do
+    RPM_DEP=`perl -ne 'print "$1\n" if /^Requires:[[:space:]]*python-pscheduler >= ([0-9\.]+)[[:space:]]*$/' ${p}/${p}.spec`
+    DEB_DEP=`perl -ne 'print "$1\n" if /.* python-pscheduler \(>= ([0-9\.]+)[~]?\).*$/' ${p}/${p}/debian/control`
+    if [[ ! "$RPM_DEP" == "$DEB_DEP" ]]; then
+        error "Check that python-pscheduler dependencies in $p for RPM ($RPM_DEP) and DEB ($DEB_DEP) are matching."
+    fi
+done
+verbose "\033[1m   OK!\033[0m"
+
 # Loop on all pscheduler packages (new packages would need to be added here)
 for p in pscheduler-* python-pscheduler; do
     case "$p" in
@@ -98,7 +112,7 @@ for p in pscheduler-* python-pscheduler; do
         fi
     fi
     # Run make-release.sh to check if everything is right for the current package
-    verbose "Checking $p is ready for release."
+    verbose "\nChecking $p is ready for release."
     if ! ${upper_dir}/distribution/debian/make-release.sh $mr_v $mr_n $mr_m -d -g > $vout; then
         error "I cannot release pscheduler because of $p"
     fi
