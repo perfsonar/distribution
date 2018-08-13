@@ -145,7 +145,7 @@ else
     fi
     REL="staging"
 fi
-PS_DEB_REP="perfsonar-${BUILD_DISTRO}-${REL}"
+PS_DEB_REP="perfsonar-${REL}"
 # We can have UNRELEASED as distro (we will change it later on), or it must be the correct $PS_DEB_REP
 if [[ "$CH_DISTRO" = "UNRELEASED" || "$CH_DISTRO" = "$PS_DEB_REP" ]]; then
     verbose "The distribution field in the debian/changelog file looks good: $CH_DISTRO."
