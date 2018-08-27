@@ -101,9 +101,9 @@ if [ -z $DEBIAN_TAG ]; then
     LINTIAN_ARGS="--suppress-tags changelog-should-mention-nmu,source-nmu-has-incorrect-version-number"
     # And we generate the changelog ourselves, with a version number suitable for an upstream snapshot
     timestamp=`date +%Y%m%d%H%M%S`
-    if ! grep -q '(native)' debian/source/format ; then
-        upstream_version=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)-[^-]*$/\1/p'`
-        pkg_revision="-1"
+    if ! grep -q '(native)' debian/source/format; then
+        upstream_version=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)\(-[^-]*\)$/\1/p'`
+        pkg_revision=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)\(-[^-]*\)$/\2/p'`
     else
         # For native packages, we take the full version string as upstream_version
         upstream_version=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)$/\1/p'`
@@ -115,7 +115,7 @@ if [ -z $DEBIAN_TAG ]; then
         [ -e ../${package}_${upstream_version}.orig.tar.xz ] ||
         [ -e ../${package}_${upstream_version}.orig.tar.bz2 ]; then
         # We have the orig tarball in the repo, we only change the release number of the package.
-        new_version=${upstream_version}${pkg_revision}+${timestamp}
+        new_version=${upstream_version}${pkg_revision}~${timestamp}
     else
         new_version=${upstream_version}+${timestamp}${pkg_revision}
     fi
