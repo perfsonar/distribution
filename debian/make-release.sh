@@ -217,6 +217,8 @@ sed "1s/ UNRELEASED;/ $PS_DEB_REP;/" $TMP_FILE > debian/changelog
 /bin/rm $TMP_FILE
 git add debian/changelog
 
+# TODO: Check if there are no pending changes in the debian/ directory
+
 if [[ $no_git -eq 0 ]]; then
     # Perform the git commit and add the tag
     echo
