@@ -128,9 +128,10 @@ else
     # We build the upstream tag from the Debian tag by, see https://github.com/perfsonar/project/wiki/Versioning :
     # - removing the leading debian/distro prefix
     # - removing the ending -1 debian-version field
+    # TODO: We should build the UPSTREAM_TAG from the format defined in gbp.conf
     UPSTREAM_TAG=${DEBIAN_TAG##*\/}
     UPSTREAM_TAG=${UPSTREAM_TAG%-*}
-    GBP_OPTS="$GBP_OPTS --git-upstream-tree=tag --git-upstream-tag=${UPSTREAM_TAG}"
+    GBP_OPTS="$GBP_OPTS --git-upstream-tree=tag"
     # We don't sign the release package as we don't have the packager's key
     dpkgsign="-us -uc"
 fi
