@@ -163,7 +163,14 @@ if [ "$pscheduler_dir_level" ]; then
             if [ -z $DEBIAN_TAG ]; then
                 git archive -o ../${package}_${upstream_version}.orig.tar.gz ${UPSTREAM_BRANCH}
             else
-                git archive -o ../${package}_${upstream_version}.orig.tar.gz ${UPSTREAM_TAG}
+                if git tag -l | grep "^${UPSTREAM_TAG}$" ; then
+                    git archive -o ../${package}_${upstream_version}.orig.tar.gz ${UPSTREAM_TAG}
+                elif git tag -l | grep "^v${UPSTREAM_TAG}$" ; then
+                    git archive -o ../${package}_${upstream_version}.orig.tar.gz v${UPSTREAM_TAG}
+                else
+                    echo "Cannot build tarball ${package}_${upstream_version}.orig.tar.gz from upstream tag ${UPSTREAM_TAG}"
+                    exit 1
+                fi
             fi
         fi
     fi
