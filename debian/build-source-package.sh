@@ -93,7 +93,7 @@ esac
 # We differentiate snapshot and release builds
 if [ -z $DEBIAN_TAG ]; then
     # If we don't have a tag, we take the source from the debian/branch and merge upstream in it so we have the latest changes
-    echo "\nBuilding snapshot package of ${PKG} from ${DEBIAN_BRANCH}.\n"
+    echo "\nBuilding snapshot package of ${PKG} from ${DEBIAN_BRANCH} and ${UPSTREAM_BRANCH}.\n"
     git merge --no-commit ${UPSTREAM_BRANCH}
     # We set the author of the Debian Changelog, only for snapshot builds (this doesn't seem to be used by gbp dch :(
     export DEBEMAIL="perfsonar-debian Autobuilder <debian@perfsonar.net>"
