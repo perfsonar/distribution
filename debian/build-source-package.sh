@@ -132,7 +132,7 @@ fi
 
 # We package the upstream sources (tarball) from git
 if [ "$pscheduler_dir_level" ]; then
-    # Directly calling git archive if pscheduler
+    # Directly calling git archive if pscheduler, because we have multiple packages inside a single repo
     # Native packages don't have upstream version, we don't need to create the upstream tarball
     if ! grep -q '(native)' debian/source/format ; then
         # Backward kludge...
@@ -170,7 +170,7 @@ if [ "$pscheduler_dir_level" ]; then
     fi
 else
     # Or calling gbp for the other packages
-    git-buildpackage $GBP_OPTS
+    gbp buildpackage $GBP_OPTS
 fi
 [ $? -eq 0 ] || exit 1
 
