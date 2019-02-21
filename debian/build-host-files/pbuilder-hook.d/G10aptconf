@@ -1,0 +1,26 @@
+#!/bin/sh
+# pbuilder hook script: setup APT configuration in the pbuilder chroot
+
+# If we have an http_proxy defined, we use it
+if [ ! -z ${http_proxy} ]; then
+    echo "Configuring APT to use the ${http_proxy} proxy."
+    echo "Acquire::http {
+        Pipeline-Depth 100;
+        Proxy \"${http_proxy}\";
+        Proxy::debian \"DIRECT\";
+    }
+    " > /etc/apt/apt.conf.d/30proxy
+fi
+
+if [ ! "${DIST}" = "unstable" ]; then
+    # We want to have the latest security patches
+    echo "Adding security.debian.org to the APT sources."
+    echo "deb http://debian/security.debian.org ${DIST}/updates main" >> /etc/apt/sources.list
+    echo "deb http://security.debian.org ${DIST}/updates main" >> /etc/apt/sources.list
+
+    # And we want to use the backport repo as a last APT source
+    echo "Adding ${DIST}-backport to the APT sources."
+    echo "deb http://debian/debian ${DIST}-backports main" >> /etc/apt/sources.list
+    echo "deb http://deb.debian.org/debian ${DIST}-backports main" >> /etc/apt/sources.list
+fi
+

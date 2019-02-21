@@ -1,0 +1,2 @@
+# Ignore Vagrant cache files
+.vagrant/

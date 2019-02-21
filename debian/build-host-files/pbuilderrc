@@ -1,0 +1,18 @@
+# Our hooks directory
+HOOKDIR="/var/cache/pbuilder/hook.d"
+USENETWORK=yes
+USERUNSHM=yes
+
+# Specific settings when building for multiple distros
+if [ -n "${DIST}" ]; then
+    DISTRIBUTION="$DIST"
+    # This one doesn't seem to be used by cowbuilder (in Jessie at least), not sure why
+    BUILDRESULT="/var/cache/pbuilder/result/$DIST/"
+    # BASETGZ is not used by cowbuilder (--no-targz calls to pbuilder)
+    BASETGZ="`dirname $BASETGZ`/$DIST-base.tgz"
+    # Local dir for local dependencies
+    OTHERMIRROR="deb [trusted=yes] file:///var/cache/pbuilder/result/$DIST ./"
+    BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
+fi
+EXTRAPACKAGES="apt-utils"
+

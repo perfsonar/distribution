@@ -1,0 +1,5 @@
+# Define here your local Debian repo/mirror
+# The ::MIRROR:: tag will get replaced by any Debian mirror URL you give to Vagrant
+deb ::MIRROR:: stretch main contrib
+deb ::MIRROR:: stretch-updates main contrib
+deb ::MIRROR:: stretch-backports main contrib

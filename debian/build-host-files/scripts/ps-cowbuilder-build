@@ -1,0 +1,192 @@
+#!/bin/bash
+# extglob is needed for the call to tar in the binary build
+shopt -s extglob
+
+# Usage info
+show_help() {
+    cat << EOF
+    Usage: ${0##*/} [-a ARCHES]  [-b DEBIAN_BRANCH] [-t DEBIAN_TAG] [-s] [-u] [REPO]
+    This script builds a perfSONAR package out of a git REPO.
+    The build happens for the $DIST Debian distro (\$DIST should be set in your ENV).
+
+    Arguments understood:
+        -a: architecture to build the package for (defaults to amd64)
+        -b: git debian branch to build from (upstream is read from gbp.conf)
+            (defaults to master)
+        -k: keep locally built packages (can be useful to solve dependencies)
+        -s: build only the source package
+        -t: git tag to build from (upstream is built from gbp.conf)
+            (defaults is to not use a tag)
+        -u: don't checkout nor update the local git repository (useful for subsequent builds with no change to sources)
+EOF
+}
+
+# Defaults
+# Repository to get source from
+REPO_LOC='/vagrant/'
+# Checked out source directory
+SRC_DIR='source'
+
+# Default values
+branch="master"
+unset tag
+ARCHES='amd64'
+unset source_only
+git_update=true
+keep_builds=false
+
+# Parsing options
+while getopts "a:b:t:su" OPT; do
+    case $OPT in
+        a) ARCHES=$OPTARG ;;
+        b) branch=$OPTARG ;;
+        k) keep_builds=true ;;
+        s) source_only=true ;;
+        t) tag=$OPTARG ;;
+        u) unset git_update ;;
+        '?')
+            show_help >&2
+            exit 1 ;;
+    esac
+done
+shift $((OPTIND-1))
+
+# Check if we still have an argument left
+if [ $# -gt 0 ]; then
+    REPO=$1
+fi
+if [ -z $REPO ]; then
+    show_help >&2
+    exit 1
+fi
+
+# Announce what we'll do!
+if [ -z $tag ]; then
+    # We don't have a tag, we build a snapshot from $branch
+    export branch
+    DIST=${branch##*\/}
+else
+    # We have a tag, say we will build from it
+    branch=$tag
+    tagl=${tag#*\/}
+    DIST=${tagl%%\/*}
+    export tag
+fi
+echo -e "\nBuilding \033[1;32m${REPO}\033[0;37m from \033[1m${branch}\033[0m on \033[1m${ARCHES}\033[0m.\n"
+[ $tag ] && echo -e "\033[1;32mThis is a \033[1;33mrelease\033[1;32m build !\033[0m\n"
+if [ $keep_builds ]; then
+    echo "To solve dependencies, I will also use packages from /var/cache/pbuilder/$DIST/result if any."
+else
+    rm -rf /var/cache/pbuilder/$DIST/result/*
+fi
+
+if [ ${git_update} ]; then
+    # Checkout source from local dev repo and merge upstream branch into ${DEBIAN_BRANCH}
+    rm -rf ${REPO}
+    git clone -b ${branch} ${REPO_LOC}${REPO} ${REPO}/${SRC_DIR}
+    cd ${REPO}/${SRC_DIR}
+    # We update all submodules to have the current building script
+    git submodule update --init --recursive --remote
+elif [ -d ${REPO}/${SRC_DIR} ]; then
+    echo "I'm using the existing ${REPO} directory."
+    cd ${REPO}/${SRC_DIR}/..
+    rm -f .git
+    mv ${SRC_DIR}/.git .
+    rm -rf *
+    mkdir ${SRC_DIR}
+    cd ${SRC_DIR}
+    mv ../.git .
+    git checkout -B ${branch}
+    git checkout -- *
+    git submodule update --init --recursive
+else
+    echo "You asked me to reuse the existing ${REPO} directory but it doesn't seem right."
+    exit 1
+fi
+
+# Build the source package
+cd ..
+./${SRC_DIR}/distribution/debian/build-source-package.sh
+[ $? -eq 0 ] || exit 1
+
+PKG=`awk '/^Source:/ {print $2}' *.dsc`
+VERSION=`awk '/^Version:/ {print $2}' *.dsc`
+
+if [ ${source_only} ]; then
+    echo
+    echo -e "I have built the source package for \033[1;32m${PKG}\033[0m at \033[1;32m${VERSION}\033[0m and you asked me to stop.\n"
+    exit
+fi
+
+# We get $DIST and $RELEASE from the content of the source package, just like in Jenkins.
+# ------- This section is taken from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
+# Get the distro we are building for from the source package archive
+# We need to look in '*/debian/gbp.conf' if it is a Debian native package we are building
+ls -la
+`tar -JxOf !(*.orig).tar.xz --wildcards debian/gbp.conf '*/debian/gbp.conf' 2>/dev/null | awk '/DIST=/ {print "export "$3}'`
+export distribution=${DIST}
+if [[ "$distribution" = "" ]]; then
+    echo "No distribution found in the source package, are you sure it is a Debian package?"
+    echo "I quit."
+    exit 1
+elif [[ $distribution != wheezy && $distribution != jessie && $distribution != stretch && $distribution != unstable ]]; then
+    echo "I don't know this distribution: $distribution"
+    echo "I quit."
+    exit 1
+fi
+# Check if we are building a snapshot or a release package
+if tar -JxOf !(*.orig).tar.gz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | grep -qE "perfsonar-$distribution-(staging|release)"; then
+    # This a release/stable build (should come from a git tag)
+    RELEASE="staging"
+else
+    # This a snapshot/nightly build
+    RELEASE="snapshot"
+fi
+# ------- End of section from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
+
+# Loop on all ARCHES for the binary builds
+for ARCH in $ARCHES; do
+    # Check if we actually need to build
+    if [[ $ARCH != amd64 ]]; then
+        # ------- This section is taken from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
+        if ! tar -zxOf !(*.orig).tar.gz --wildcards debian/control '*/debian/control' 2>/dev/null | grep -q '^Architecture: any'; then
+            echo "I skip building binary independent package on $architecture"
+            continue
+        fi 
+        # ------- End of section from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
+    fi
+    if  [[ $distribution == unstable && $ARCH =~ arm ]]; then
+        echo "$distribution builds on $ARCH are broken, I skip."
+        continue
+    fi
+
+    # Update cowbuilder chroot
+    echo
+    echo "Updating cowbuilder environment base-${distribution}-${ARCH}-${RELEASE}.cow"
+    # We do this through a direct call to pbuilder as cowbuilder doesn't seem to be able to move chroot inside a Docker container FS
+    sudo rm -rf /var/cache/pbuilder/temp-update.cow
+    sudo cp -a /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow /var/cache/pbuilder/temp-update.cow
+    sudo -E pbuilder update --buildplace /var/cache/pbuilder/temp-update.cow --no-targz
+    sudo rm -rf /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow
+    sudo mv /var/cache/pbuilder/temp-update.cow /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow
+
+    # Build binary package in cowbuilder chroot
+    echo
+    echo "Building binary package in base-${distribution}-${ARCH}-${RELEASE}.cow"
+    if [[ ${PKG} = "i2util" ]]; then
+        # Special case for i2util because of the bootstrap.sh script the build process contains
+        sudo -E DIST=${distribution} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${distribution} --debbuildopts -B
+    else
+        sudo -E DIST=${distribution} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${distribution}
+    fi
+done
+
+# We copy the resulting packages back to the main host
+echo -e "\n\033[1;32mBuild succeeded, we copy the resulting packages to the shared volume /vagrant/result\033[0m\n"
+for deb in /var/cache/pbuilder/result/${DIST}/*.deb ; do
+    echo ${deb##*/}
+    cp -af ${deb} /vagrant/result/
+done
+
+# Clean out the source builds
+rm -f ${PKG}_*

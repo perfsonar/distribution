@@ -1,0 +1,79 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# A sane locale
+ENV["LC_ALL"] = "C"
+
+## The following 2 variables would preferably be defined in your local ~/.vagrant.d/Vagrantfile
+# Architectures for which we will build Debian packages
+# If empty, all architectures supported by perfSONAR will be built
+#ENV["PS_DEB_ARCHES"] = "amd64 armhf"
+# Debian repository mirror to be used when fetching packages
+# If not set, will default to the Vagrant Box image we use
+#ENV["PS_DEB_MIRROR"] = "http://debian/debian"
+
+Vagrant.configure("2") do |config|
+    # Build a build machine as the default
+    config.vm.define "d9-build-ps", primary: true, autostart: true do |build|
+        # Set box to Debian Contrib 9 image (see https://app.vagrantup.com/debian/ )
+        build.vm.box = "debian/contrib-stretch64"
+
+        # Set a meaningful hostname
+        build.vm.hostname = "d9-build-ps"
+        
+        # We share the toplevel directory of all repositories
+        build.vm.synced_folder "../../..", "/vagrant", type: "virtualbox"
+
+        # Install all requirements and perform initial setup
+        build.vm.provision "shell", path: "vagrant-d9-build-ps-setup-root.sh", env: {
+            "host_pwd" => ENV["PWD"],
+            "http_proxy" => ENV["http_proxy"],
+            "ARCHES" => ENV["PS_DEB_ARCHES"],
+            "MIRROR" => ENV["PS_DEB_MIRROR"]
+        }
+        # A second step is needed for the setup
+        build.vm.provision "shell", path: "vagrant-d9-build-ps-setup-user.sh", privileged: false, env: {
+            "host_pwd" => ENV["PWD"]
+        }
+
+        # Install useful environment variables to build packages whenever we ssh to it
+        build.trigger.before :ssh do |trigger|
+            trigger.info = "Setting up environment variables in the build machine."
+            trigger.run_remote = {
+            env: {"http_proxy" => ENV["http_proxy"], "host_pwd" => ENV["PWD"]},
+            inline: <<-SHELL 
+host_repo_path=${host_pwd%/distribution/debian}
+repo_name=${host_repo_path##*/}
+echo "# Define some environment variables useful for perfSONAR builds
+export http_proxy=$http_proxy
+export PS_REPO=$repo_name" > /etc/profile.d/ps-local.sh
+SHELL
+            }
+        end
+  
+        # Message the user
+        build.vm.post_up_message = <<MSG
+-------------------------------------------
+perfSONAR Debian build machine is ready!
+You can use it with the following commands:
+
+vagrant ssh
+./ps-cowbuilder-build $PS_REPO
+-------------------------------------------
+
+The resulting packages will be in a directory called /result/
+at the same level as this git repository.
+MSG
+    end
+
+    # A second VM to test package installation
+    config.vm.define "d9-install-ps", primary: false, autostart: false do |install|
+        # Set box to Debian Contrib 9 image (see https://app.vagrantup.com/debian/ )
+        install.vm.box = "debian/contrib-stretch64"
+
+        # Set a meaningful hostname
+        install.vm.hostname = "d9-install-ps"
+        
+        # TODO: install the packages built in the build.vm to confirm all is fine
+    end
+end

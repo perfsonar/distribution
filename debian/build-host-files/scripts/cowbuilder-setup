@@ -1,0 +1,94 @@
+#!/bin/bash
+# This script creates a cowbuilder image for the given Debian distribution and for different architectures.
+# It understand the following ENV variables:
+#   - ARCHES: the architectures that we create an image for
+#   - DIST: the distribution we create an image for (can be given as arg)
+#   - MIRROR: the Debian mirror to use, if any
+# The cowbuilder/pbuilder settings are defined in the /root/.pbuilderrc file
+#
+# === Caution ===
+# This scripts makes the assumption that the host machine is a i386/amd64 machine.
+
+# Defaults and initialisations
+PS_REPO="http://downloads.perfsonar.net/debian/"
+#PS_REPO="http://ps-deb-repo.qalab.geant.net/debian/"
+if [ -z "$ARCHES" ]; then
+    ARCHES="amd64 i386 armhf armel arm64"
+fi
+if [ -z "$MIRROR" ]; then
+    MIRROR=""
+else
+    MIRROR="--mirror ${MIRROR}"
+fi
+
+if [ $# -eq 1 ]; then
+    export DIST=$1
+fi
+if [ -z $DIST ]; then
+    echo $0: usage: Creates a cowbuilder chroot for the given distro, \$DIST cannot be empty.
+    exit 1
+fi
+
+# For error counting and logging
+unset ERRS
+
+# Create a new cowbuilder chroot and a place to put resulting packages
+mkdir -p /var/cache/pbuilder/result/${DIST}
+touch /var/cache/pbuilder/result/${DIST}/Packages
+for ARCH in $ARCHES
+do
+    echo -e "\n\033[1;37mCreating a cowbuilder image for \033[1;36m${DIST}-${ARCH}\033[1;37m.\033[0m"
+    if [[ $ARCH == amd64 || $ARCH == i386 ]]; then
+        cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
+    elif [[ $dist == wheezy && $arch == arm64 ]]; then
+        echo "There is no arm64 port for Wheezy"
+    else
+        cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} --debootstrap qemu-debootstrap --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
+    fi
+done
+
+for PSREL in staging snapshot
+do
+    PS_DIST="perfsonar-${PSREL}"
+
+    # Update the cowbuilder chroot with new sources and with the perfSONAR repo key
+    export TMP_SCRIPT=$(mktemp)
+    echo "#!/bin/sh" > ${TMP_SCRIPT}
+    if [[ "$DIST" == "stretch" ]]; then
+        echo "apt-get install -y gnupg dirmngr" >> ${TMP_SCRIPT}
+    fi
+    # Add the perfSONAR source list at the top of the list and get the GPG key
+    echo "mv /etc/apt/sources.list /tmp" >> ${TMP_SCRIPT}
+    echo "echo \"deb ${PS_REPO} ${PS_DIST} main\" > /etc/apt/sources.list" >> ${TMP_SCRIPT}
+    echo "cat /tmp/sources.list >> /etc/apt/sources.list" >> ${TMP_SCRIPT}
+    echo "apt-key adv --fetch-keys ${PS_REPO}perfsonar-snapshot.gpg.key" >> ${TMP_SCRIPT}
+    echo "apt-get update" >> ${TMP_SCRIPT}
+    for ARCH in $ARCHES
+    do
+        if [ -d /var/cache/pbuilder/base-${DIST}-${ARCH}.cow ]; then
+            if [[ $dist == wheezy && $arch == arm64 ]]; then
+                echo "There is no arm64 port for Wheezy"
+            else
+                echo -e "\n\033[1;37mCreating a cowbuilder image for \033[1;36m${DIST}-${ARCH}\033[1;37m with \033[1;36m${PS_DIST}\033[1;37m.\033[0m"
+                # We do this through a direct call to pbuilder as cowbuilder doesn't seem to be able to move chroot inside a Docker container FS
+                rm -rf /var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow
+                cp -a /var/cache/pbuilder/base-${DIST}-${ARCH}.cow /var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow
+                if ! pbuilder execute --buildplace /var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow --no-targz -- ${TMP_SCRIPT}; then
+                    ERRS[${#ERRS[*]}]="\n\033[1;32mError executing \033[1;31m${TMP_SCRIPT}\033[1;32m in \033[0m/var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow"
+                    echo -e $ERRS[${#ERRS[*]}-1]
+                fi
+            fi
+        else
+            ERRS[${#ERRS[*]}]="\n\033[1;32mCannot update \033[0m/var/cache/pbuilder/base-${DIST}-${ARCH}.cow\033[1;32m to \033[1;31m${PS_DIST}\033[1;32m because it doesn't exist\033[0m"
+            echo -e $ERRS[${#ERRS[*]}-1]
+        fi
+    done
+    rm ${TMP_SCRIPT}
+done
+
+# Error reporting
+if [ ${#ERRS[*]} -gt 0 ]; then
+    echo -e "\n\033[1;32mThere were errors:\033[0m"
+    echo -e ${ERRS[*]}
+fi
+
