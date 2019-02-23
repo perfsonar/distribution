@@ -153,7 +153,7 @@ fi
 
 # Perform the git commit and add the tag
 echo
-git commit ${commit_a} ${commit_options} -m "Releasing pscheduler (${VERSION})"
+git commit ${commit_a} ${commit_options} -m "Releasing Debian/Ubuntu package for pscheduler (${VERSION})"
 git tag ${tag_options} ${TAG}
 echo
 echo "If you're happy with the commit and tag above, you just need to push that away!"

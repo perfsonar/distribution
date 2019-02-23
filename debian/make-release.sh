@@ -222,7 +222,7 @@ git add debian/changelog
 if [[ $no_git -eq 0 ]]; then
     # Perform the git commit and add the tag
     echo
-    git commit ${commit_a} ${commit_options} -m "Releasing ${PKG} (${PKG_VERSION})"
+    git commit ${commit_a} ${commit_options} -m "Releasing Debian/Ubuntu package for ${PKG} (${PKG_VERSION})"
     git tag ${tag_options} ${DEBIAN_TAG}
     echo
     echo "If you're happy with the commit and tag above, you just need to push that away!"
