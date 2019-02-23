@@ -12,5 +12,5 @@ cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/pbuilderrc /home/${USE
 cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/scripts/ps-cowbuilder-build /home/${USER}/
 chmod +x /home/${USER}/ps-cowbuilder-build
 
-# Make sure result directory is existing
+# Make sure result directory in the Vagrant share is existing
 [ -d ${PS_SHARED_REPO}/../result ] || mkdir ${PS_SHARED_REPO}/../result

@@ -53,5 +53,6 @@ chmod +x /var/cache/pbuilder/hook.d/*
 for distro in jessie stretch; do
     export DIST="${distro}"
     /root/cowbuilder-setup
+    chown -R vagrant:vagrant /var/cache/pbuilder/result/${DIST}
 done
 

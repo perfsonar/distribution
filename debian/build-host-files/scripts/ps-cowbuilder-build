@@ -36,7 +36,7 @@ git_update=true
 keep_builds=false
 
 # Parsing options
-while getopts "a:b:t:su" OPT; do
+while getopts "a:b:t:ksu" OPT; do
     case $OPT in
         a) ARCHES=$OPTARG ;;
         b) branch=$OPTARG ;;
@@ -67,20 +67,20 @@ if [ -z $tag ]; then
     DIST=${branch##*\/}
 else
     # We have a tag, say we will build from it
-    branch=$tag
+    [ -z $branch ] && branch=$tag
     tagl=${tag#*\/}
     DIST=${tagl%%\/*}
     export tag
 fi
 echo -e "\nBuilding \033[1;32m${REPO}\033[0;37m from \033[1m${branch}\033[0m on \033[1m${ARCHES}\033[0m.\n"
 [ $tag ] && echo -e "\033[1;32mThis is a \033[1;33mrelease\033[1;32m build !\033[0m\n"
-if [ $keep_builds ]; then
+if $keep_builds ; then
     echo "To solve dependencies, I will also use packages from /var/cache/pbuilder/$DIST/result if any."
 else
-    rm -rf /var/cache/pbuilder/$DIST/result/*
+    rm -rf /var/cache/pbuilder/result/$DIST/*
 fi
 
-if [ ${git_update} ]; then
+if $git_update ; then
     # Checkout source from local dev repo and merge upstream branch into ${DEBIAN_BRANCH}
     rm -rf ${REPO}
     git clone -b ${branch} ${REPO_LOC}${REPO} ${REPO}/${SRC_DIR}
