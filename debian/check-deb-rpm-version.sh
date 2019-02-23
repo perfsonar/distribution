@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script to check that the version of Debian packages is the same as the RPM version.
 # Versions in .spec file and in the debian/changelog files are compared.
 
