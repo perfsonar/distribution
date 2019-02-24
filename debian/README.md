@@ -52,7 +52,18 @@ cleanly with all dependencies solved.
 ## Scripts
 The Vagrant setup described hereabove is using the different follwoing scripts.
 
-### Builds
+### Full Builds
+Full package builds are creating first the source package and then a number of
+architecture dependant binary packages.  A full build can be launched with the
+`ps-cowbuild-build` script.
+
+This script can use some options:
+
+- `-b` the branch that you want to build
+- `-t` the tag that you want to build (release build)
+- `-s` to build a source package only
+
+### Source Builds
 The `build-source-package.sh` script builds a Debian source package from
 a git repository checkout.  It is to be run in a branch containing a debian/
 directory.

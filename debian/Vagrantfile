@@ -20,27 +20,40 @@ Vagrant.configure("2") do |config|
 
         # Set a meaningful hostname
         build.vm.hostname = "d9-build-ps"
-        
+
         # We share the toplevel directory of all repositories
-        build.vm.synced_folder "../../..", "/vagrant", type: "virtualbox"
+        if File.file?("../.git")
+            # We're in a submodule, the toplevel is 3 levels up
+            build.vm.synced_folder "../../..", "/vagrant", type: "virtualbox"
+            host_pwd = ENV["PWD"]
+        elsif File.directory?("../.git")
+            # We're in the main distribution repo, the toplevel is 2 levels up
+            build.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
+            host_pwd = ""
+        else
+            echo "I don't know which directory to share with the Vagrant host"
+            exit
+        end
 
         # Install all requirements and perform initial setup
         build.vm.provision "shell", path: "vagrant-d9-build-ps-setup-root.sh", env: {
-            "host_pwd" => ENV["PWD"],
+            "host_pwd" => host_pwd,
             "http_proxy" => ENV["http_proxy"],
             "ARCHES" => ENV["PS_DEB_ARCHES"],
             "MIRROR" => ENV["PS_DEB_MIRROR"]
         }
         # A second step is needed for the setup
-        build.vm.provision "shell", path: "vagrant-d9-build-ps-setup-user.sh", privileged: false, env: {
-            "host_pwd" => ENV["PWD"]
+        build.vm.provision "shell", path: "vagrant-d9-build-ps-setup-user.sh", privileged: false, run: "always", env: {
+            "host_pwd" => host_pwd,
+            "VAGRANT_USER_DOTFILES" => ENV["VAGRANT_USER_DOTFILES"],
+            "VAGRANT_USER_DOTFILES_DEPLOY" => ENV["VAGRANT_USER_DOTFILES_DEPLOY"]
         }
 
         # Install useful environment variables to build packages whenever we ssh to it
         build.trigger.before :ssh do |trigger|
             trigger.info = "Setting up environment variables in the build machine."
             trigger.run_remote = {
-            env: {"http_proxy" => ENV["http_proxy"], "host_pwd" => ENV["PWD"]},
+            env: {"http_proxy" => ENV["http_proxy"], "host_pwd" => host_pwd},
             inline: <<-SHELL 
 host_repo_path=${host_pwd%/distribution/debian}
 repo_name=${host_repo_path##*/}
@@ -61,7 +74,7 @@ vagrant ssh
 ./ps-cowbuilder-build $PS_REPO
 -------------------------------------------
 
-The resulting packages will be in a directory called /result/
+The resulting packages will be in a directory called result/
 at the same level as this git repository.
 MSG
     end

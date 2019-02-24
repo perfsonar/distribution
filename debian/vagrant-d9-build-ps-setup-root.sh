@@ -8,13 +8,13 @@
 host_repo_path=${host_pwd%/distribution/debian}
 export PS_SHARED_REPO=/vagrant/${host_repo_path##*/}
 
-[ -n $http_proxy ] && echo "\033[1;36mUsing $http_proxy as http_proxy\033[0m"
+[ $http_proxy ] && echo "\033[1;36mUsing $http_proxy as http_proxy\033[0m"
 echo "\033[1;36mPreparing build environment with scripts from $PS_SHARED_REPO\033[0m"
 
 # Configure APT
 if [ -d ${PS_SHARED_REPO}/distribution/debian/build-host-files/apt.conf.d ]; then
     echo "\033[1;36mConfiguring APT with files from build-host-files/apt.conf.d\033[0m"
-    cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/apt.conf.d/* /etc/apt/apt.conf.d/
+    cp -R ${PS_SHARED_REPO}/distribution/debian/build-host-files/apt.conf.d/ /etc/apt/apt.conf.d/
 fi
 
 # Add contrib and backport repositories
@@ -36,7 +36,7 @@ fi
 
 # Install build requirements
 apt-get update
-apt-get install -y git-buildpackage qemu-user-static debootstrap eatmydata lintian cowbuilder
+apt-get install -y git-buildpackage qemu-user-static debootstrap eatmydata lintian cowbuilder vim
 # If the build.vm is a Jessie box, we would need the following backports:
 #apt-get install -y -t stretch-backports debootstrap eatmydata lintian pbuilder
 apt-get autoremove -y

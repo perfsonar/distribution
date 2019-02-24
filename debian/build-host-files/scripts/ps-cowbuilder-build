@@ -72,7 +72,7 @@ else
     DIST=${tagl%%\/*}
     export tag
 fi
-echo -e "\nBuilding \033[1;32m${REPO}\033[0;37m from \033[1m${branch}\033[0m on \033[1m${ARCHES}\033[0m.\n"
+echo -e "\nBuilding \033[1;32m${REPO}\033[0;37m from branch \033[1;36m${branch}\033[0;37m on \033[1;32m${ARCHES}\033[0;37m.\n"
 [ $tag ] && echo -e "\033[1;32mThis is a \033[1;33mrelease\033[1;32m build !\033[0m\n"
 if $keep_builds ; then
     echo "To solve dependencies, I will also use packages from /var/cache/pbuilder/$DIST/result if any."
@@ -126,10 +126,12 @@ ls -la
 `tar -JxOf !(*.orig).tar.xz --wildcards debian/gbp.conf '*/debian/gbp.conf' 2>/dev/null | awk '/DIST=/ {print "export "$3}'`
 export distribution=${DIST}
 if [[ "$distribution" = "" ]]; then
+    echo
     echo "No distribution found in the source package, are you sure it is a Debian package?"
     echo "I quit."
     exit 1
 elif [[ $distribution != wheezy && $distribution != jessie && $distribution != stretch && $distribution != unstable ]]; then
+    echo
     echo "I don't know this distribution: $distribution"
     echo "I quit."
     exit 1
@@ -150,19 +152,18 @@ for ARCH in $ARCHES; do
     if [[ $ARCH != amd64 ]]; then
         # ------- This section is taken from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
         if ! tar -zxOf !(*.orig).tar.gz --wildcards debian/control '*/debian/control' 2>/dev/null | grep -q '^Architecture: any'; then
-            echo "I skip building binary independent package on $architecture"
+            echo -e "\n\033[1;32mI skip building binary independent package on $architecture\033[0m"
             continue
         fi 
         # ------- End of section from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
     fi
     if  [[ $distribution == unstable && $ARCH =~ arm ]]; then
-        echo "$distribution builds on $ARCH are broken, I skip."
+        echo -e "\n\033[1;32m$distribution builds on $ARCH are broken, I skip.\033[0m"
         continue
     fi
 
     # Update cowbuilder chroot
-    echo
-    echo "Updating cowbuilder environment base-${distribution}-${ARCH}-${RELEASE}.cow"
+    echo -e "\n\033[1;32mUpdating cowbuilder environment base-${distribution}-${ARCH}-${RELEASE}.cow\033[0m"
     # We do this through a direct call to pbuilder as cowbuilder doesn't seem to be able to move chroot inside a Docker container FS
     sudo rm -rf /var/cache/pbuilder/temp-update.cow
     sudo cp -a /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow /var/cache/pbuilder/temp-update.cow
@@ -171,8 +172,7 @@ for ARCH in $ARCHES; do
     sudo mv /var/cache/pbuilder/temp-update.cow /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow
 
     # Build binary package in cowbuilder chroot
-    echo
-    echo "Building binary package in base-${distribution}-${ARCH}-${RELEASE}.cow"
+    echo -e "\n\033[1;32mBuilding binary package in base-${distribution}-${ARCH}-${RELEASE}.cow\033[0m"
     if [[ ${PKG} = "i2util" ]]; then
         # Special case for i2util because of the bootstrap.sh script the build process contains
         sudo -E DIST=${distribution} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${distribution} --debbuildopts -B
@@ -181,12 +181,16 @@ for ARCH in $ARCHES; do
     fi
 done
 
-# We copy the resulting packages back to the main host
-echo -e "\n\033[1;32mBuild succeeded, we copy the resulting packages to the shared volume /vagrant/result\033[0m\n"
-for deb in /var/cache/pbuilder/result/${DIST}/*.deb ; do
-    echo ${deb##*/}
-    cp -af ${deb} /vagrant/result/
-done
+if [ !$? ]; then
+    # We copy the resulting packages back to the main host
+    echo -e "\n\033[1;32mBuild succeeded, we copy the resulting packages to the shared volume /vagrant/result\033[0m\n"
+    for deb in /var/cache/pbuilder/result/${DIST}/*.deb ; do
+        echo ${deb##*/}
+        cp -af ${deb} /vagrant/result/
+    done
+else
+    echo -e "\n\033[1;33mSomething went wrong, package not built!\033[0m\n"
+fi
 
 # Clean out the source builds
 rm -f ${PKG}_*
