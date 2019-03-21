@@ -30,13 +30,16 @@ scripts are setting up the build environment.  Our full Debian build environemen
 is using a cowbuilder/pbuilder subsytem to isolate the builds in a dedicated and
 clean chroot.
 
-The machine is making use of 2 environment variables:
+The machine is making use of 3 environment variables:
 
 - `PS_DEB_ARCHES` list the architectures for which packages will be built, an empty
     list will build all the supported arches.
 - `PS_DEB_MIRROR` can contain the base URL of a Debian repository mirror you want
     to use (i.e. close to you), if not set the repository used will be the default
     one setup in the Debian box (which should be fine most of the time)
+- `http_proxy` can contain the base URL of an HTTP proxy to use when downloading
+    the packages.  This will be used in all the different installs (main machine and
+    cowbuilder chroot)
 
 If you want to change those variables, it is recommended to do so in your own local
 `~/.vagrant.d/Vagrantfile` (see https://www.vagrantup.com/docs/vagrantfile/#load-order-and-merging )
@@ -44,6 +47,17 @@ If you want to change those variables, it is recommended to do so in your own lo
 Additionnaly, all files from the `build-host-files/apt.conf.d/` directory will be
 copied to the d9-build-ps VM so that you can make a dedicated APT setup if you need.
 That can be useful if you want to use a proxy for example.
+
+Running `vagrant provision` on a running machine will upgrade and keep the build
+environement up to date.  This is usually not needed as the `ps-cowbuilder-build`
+will update the environement anyway.  But this can be useful when adding new build
+architectures.
+
+#### Limitation
+There is currently a limitation due to the disk size of the VM.  By default it is
+10 GB which might not be enough to build all packages in all different variants of
+distro and architectures.  If you want to do that, you'll probably need to increase
+the VM disk size manually.
 
 ### d9-install-ps VM
 This machine will be setup to test a newly built Debian package can be installed

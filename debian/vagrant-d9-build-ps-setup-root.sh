@@ -6,7 +6,7 @@
 
 # Get repo/package name
 host_repo_path=${host_pwd%/distribution/debian}
-export PS_SHARED_REPO=/vagrant/${host_repo_path##*/}
+export PS_SHARED_REPO=/vagrant${host_repo_path##*/}
 
 [ $http_proxy ] && echo "\033[1;36mUsing $http_proxy as http_proxy\033[0m"
 echo "\033[1;36mPreparing build environment with scripts from $PS_SHARED_REPO\033[0m"
@@ -20,15 +20,17 @@ fi
 # Add contrib and backport repositories
 echo "\033[1;36mAdding contrib and backports repositories.\033[0m"
 sed -i 's| main$| main contrib|' /etc/apt/sources.list
-echo "deb http://deb.debian.org/debian stretch-backports main contrib" >> /etc/apt/sources.list
+if ! grep "stretch-backports main contrib" /etc/apt/sources.list; then
+    echo "deb http://deb.debian.org/debian stretch-backports main contrib" >> /etc/apt/sources.list
+fi
 
 # Add a repository mirror if defined and make it the prefered source
 if [ -n "$MIRROR" ]; then
     echo "\033[1;36mConfiguring Debian repository mirror.\033[0m"
     cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/sources.list.d/local-repo.list /etc/apt/sources.list.d/
     sed -i "s|::MIRROR::|${MIRROR}|" /etc/apt/sources.list.d/local-repo.list
-    cat /etc/apt/sources.list >> /etc/apt/sources.list.d/local-repo.list
-    mv /etc/apt/sources.list.d/local-repo.list /etc/apt/sources.list
+#    cat /etc/apt/sources.list >> /etc/apt/sources.list.d/local-repo.list
+#    mv /etc/apt/sources.list.d/local-repo.list /etc/apt/sources.list
     export MIRROR="${MIRROR}"
 fi
 # Do we need to build for some specific architectures only?
@@ -42,7 +44,7 @@ apt-get install -y git-buildpackage qemu-user-static debootstrap eatmydata linti
 apt-get autoremove -y
 
 # Setup build environment
-mkdir /var/cache/pbuilder/hook.d/
+mkdir -p /var/cache/pbuilder/hook.d/
 cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/pbuilderrc /root/.pbuilderrc
 cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/pbuilder-hook.d/* /var/cache/pbuilder/hook.d/
 cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/scripts/cowbuilder-setup /root/

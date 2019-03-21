@@ -15,12 +15,10 @@ fi
 if [ ! "${DIST}" = "unstable" ]; then
     # We want to have the latest security patches
     echo "Adding security.debian.org to the APT sources."
-    echo "deb http://debian/security.debian.org ${DIST}/updates main" >> /etc/apt/sources.list
     echo "deb http://security.debian.org ${DIST}/updates main" >> /etc/apt/sources.list
 
     # And we want to use the backport repo as a last APT source
     echo "Adding ${DIST}-backport to the APT sources."
-    echo "deb http://debian/debian ${DIST}-backports main" >> /etc/apt/sources.list
     echo "deb http://deb.debian.org/debian ${DIST}-backports main" >> /etc/apt/sources.list
 fi
 

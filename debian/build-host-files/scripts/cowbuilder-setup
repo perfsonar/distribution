@@ -11,13 +11,12 @@
 
 # Defaults and initialisations
 PS_REPO="http://downloads.perfsonar.net/debian/"
+# Alternative repo, if above is down
 #PS_REPO="http://ps-deb-repo.qalab.geant.net/debian/"
 if [ -z "$ARCHES" ]; then
-    ARCHES="amd64 i386 armhf armel arm64"
+    ARCHES="amd64 i386 armhf armel arm64 ppc64el"
 fi
-if [ -z "$MIRROR" ]; then
-    MIRROR=""
-else
+if [ -n "$MIRROR" ]; then
     MIRROR="--mirror ${MIRROR}"
 fi
 
@@ -38,12 +37,18 @@ touch /var/cache/pbuilder/result/${DIST}/Packages
 for ARCH in $ARCHES
 do
     echo -e "\n\033[1;37mCreating a cowbuilder image for \033[1;36m${DIST}-${ARCH}\033[1;37m.\033[0m"
-    if [[ $ARCH == amd64 || $ARCH == i386 ]]; then
-        cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
-    elif [[ $dist == wheezy && $arch == arm64 ]]; then
-        echo "There is no arm64 port for Wheezy"
+    if [[ -d /var/cache/pbuilder/base-${DIST}-${ARCH}.cow ]]; then
+        echo -e "Image already exists, skipping."
     else
-        cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} --debootstrap qemu-debootstrap --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
+        if [[ $ARCH == amd64 || $ARCH == i386 ]]; then
+            cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
+        elif [[ $DIST == wheezy && $ARCH =~ (arm64|ppc64el) ]]; then
+            echo "There is no $ARCH port for Wheezy"
+        elif [[ $DIST == jessie && $ARCH =~ (arm64|ppc64el) ]]; then
+            echo "There is no more support for $ARCH port for Jessie LTS"
+        else
+            cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} --debootstrap qemu-debootstrap --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
+        fi
     fi
 done
 
@@ -66,18 +71,18 @@ do
     for ARCH in $ARCHES
     do
         if [ -d /var/cache/pbuilder/base-${DIST}-${ARCH}.cow ]; then
-            if [[ $dist == wheezy && $arch == arm64 ]]; then
-                echo "There is no arm64 port for Wheezy"
-            else
-                echo -e "\n\033[1;37mCreating a cowbuilder image for \033[1;36m${DIST}-${ARCH}\033[1;37m with \033[1;36m${PS_DIST}\033[1;37m.\033[0m"
-                # We do this through a direct call to pbuilder as cowbuilder doesn't seem to be able to move chroot inside a Docker container FS
-                rm -rf /var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow
-                cp -a /var/cache/pbuilder/base-${DIST}-${ARCH}.cow /var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow
-                if ! pbuilder execute --buildplace /var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow --no-targz -- ${TMP_SCRIPT}; then
-                    ERRS[${#ERRS[*]}]="\n\033[1;32mError executing \033[1;31m${TMP_SCRIPT}\033[1;32m in \033[0m/var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow"
-                    echo -e $ERRS[${#ERRS[*]}-1]
-                fi
+            echo -e "\n\033[1;37mCreating a cowbuilder image for \033[1;36m${DIST}-${ARCH}\033[1;37m with \033[1;36m${PS_DIST}\033[1;37m.\033[0m"
+            # We do this through a direct call to pbuilder as cowbuilder doesn't seem to be able to move chroot inside a Docker container FS
+            rm -rf /var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow
+            cp -a /var/cache/pbuilder/base-${DIST}-${ARCH}.cow /var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow
+            if ! pbuilder execute --buildplace /var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow --no-targz -- ${TMP_SCRIPT}; then
+                ERRS[${#ERRS[*]}]="\n\033[1;32mError executing \033[1;31m${TMP_SCRIPT}\033[1;32m in \033[0m/var/cache/pbuilder/base-${DIST}-${ARCH}-${PSREL}.cow"
+                echo -e $ERRS[${#ERRS[*]}-1]
             fi
+        elif [[ $DIST == wheezy && $ARCH =~ (arm64|ppc64el) ]]; then
+            echo "There is no $ARCH port for Wheezy"
+        elif [[ $DIST == jessie && $ARCH =~ (arm64|ppc64el) ]]; then
+            echo "There is no more support for $ARCH port for Jessie LTS"
         else
             ERRS[${#ERRS[*]}]="\n\033[1;32mCannot update \033[0m/var/cache/pbuilder/base-${DIST}-${ARCH}.cow\033[1;32m to \033[1;31m${PS_DIST}\033[1;32m because it doesn't exist\033[0m"
             echo -e $ERRS[${#ERRS[*]}-1]
