@@ -22,13 +22,13 @@ Vagrant.configure("2") do |config|
         build.vm.hostname = "d9-build-ps"
 
         # Add a second disk to contain the pbuilder chroot
-        secondDisk = "pbuilder-secondDisk.vdi"
+        secondDisk = "vagrant-build-host-secondDisk.vdi"
         unless File.exist?(secondDisk)
             build.vm.provider "virtualbox" do |vb|
                 vb.customize ['createhd', '--filename', secondDisk, '--size', 25 * 1024]
                 vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', secondDisk]
             end
-            build.vm.provision "shell", path: "vagrant-d9-build-secondDisk.sh"
+            build.vm.provision "shell", path: "vagrant-build-host-d9-secondDisk.sh"
         end
 
         # We share the toplevel directory of all repositories
@@ -46,15 +46,17 @@ Vagrant.configure("2") do |config|
         end
 
         # Install all requirements and perform initial setup
-        build.vm.provision "shell", path: "vagrant-d9-build-ps-setup-root.sh", env: {
+        build.vm.provision "shell", path: "build-host-d9-setup.sh", env: {
             "host_pwd" => host_pwd,
             "http_proxy" => ENV["http_proxy"],
+            "SHARED_REPO_PREFIX" => "/vagrant",
             "ARCHES" => ENV["PS_DEB_ARCHES"],
             "MIRROR" => ENV["PS_DEB_MIRROR"]
         }
         # A second step is needed for the setup
-        build.vm.provision "shell", path: "vagrant-d9-build-ps-setup-user.sh", privileged: false, run: "always", env: {
+        build.vm.provision "shell", path: "vagrant-build-host-d9-user-setup.sh", privileged: false, run: "always", env: {
             "host_pwd" => host_pwd,
+            "SHARED_REPO_PREFIX" => "/vagrant",
             "VAGRANT_USER_DOTFILES" => ENV["VAGRANT_USER_DOTFILES"],
             "VAGRANT_USER_DOTFILES_DEPLOY" => ENV["VAGRANT_USER_DOTFILES_DEPLOY"]
         }
