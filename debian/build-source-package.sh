@@ -87,14 +87,7 @@ esac
 # We differentiate snapshot and release builds
 if [ -z $DEBIAN_TAG ]; then
     # If we don't have a tag, we take the source from the debian/branch and merge upstream in it so we have the latest changes
-    if [[ "0" == ${UPSTREAM_BRANCH##*.} ]]; then
-        # If the last digit of the version number is 0, we are on a minor release
-        distribution=perfsonar-minor-snapshot
-    else
-        # otherwise we are on a patch release
-        distribution=perfsonar-patch-snapshot
-    fi
-    echo "\nBuilding $distribution package of ${PKG} from ${DEBIAN_BRANCH} and ${UPSTREAM_BRANCH}.\n"
+    echo "\nBuilding snapshot package of ${PKG} from ${DEBIAN_BRANCH} and ${UPSTREAM_BRANCH}.\n"
     git merge --no-commit ${UPSTREAM_BRANCH}
     # We set the author of the Debian Changelog, only for snapshot builds (this doesn't seem to be used by gbp dch :(
     export DEBEMAIL="perfsonar-debian Autobuilder <debian@perfsonar.net>"
@@ -120,7 +113,7 @@ if [ -z $DEBIAN_TAG ]; then
     else
         new_version=${upstream_version}+${timestamp}${pkg_revision}
     fi
-    dch -b --distribution=${distribution} --newversion=${new_version} -- 'SNAPSHOT autobuild for '${upstream_version}' via Jenkins'
+    dch -b --distribution=UNRELEASED --newversion=${new_version} -- 'SNAPSHOT autobuild for '${upstream_version}' via Jenkins'
     GBP_OPTS="$GBP_OPTS --git-upstream-tree=branch --git-upstream-branch=${UPSTREAM_BRANCH}"
     dpkgsign="-k8968F5F6"
 else

@@ -105,8 +105,10 @@ else
     exit 1
 fi
 
-# Build the source package
 cd ..
+# We will need this because it will be removed from the SRC_DIR
+cp ./${SRC_DIR}/distribution/debian/check-release-repo.sh .
+# Build the source package
 ./${SRC_DIR}/distribution/debian/build-source-package.sh
 [ $? -eq 0 ] || exit 1
 
@@ -120,7 +122,7 @@ if [ ${source_only} ]; then
 fi
 
 # We get $BUILD_ARCH, $DIST and $RELEASE from the content of the source package
-./${SRC_DIR}/distribution/debian/check-release-repo.sh
+. ./check-release-repo.sh
 [ $? -eq 0 ] || exit 1
 
 # Loop on all ARCHES for the binary builds
