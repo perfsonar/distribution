@@ -119,66 +119,34 @@ if [ ${source_only} ]; then
     exit
 fi
 
-# We get $DIST and $RELEASE from the content of the source package, just like in Jenkins.
-# ------- This section is taken from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
-# Get the distro we are building for from the source package archive
-# We need to look in '*/debian/gbp.conf' if it is a Debian native package we are building
-ls -la
-`tar -JxOf !(*.orig).tar.xz --wildcards debian/gbp.conf '*/debian/gbp.conf' 2>/dev/null | awk '/DIST=/ {print "export "$3}'`
-export distribution=${DIST}
-if [[ "$distribution" = "" ]]; then
-    echo
-    echo "No distribution found in the source package, are you sure it is a Debian package?"
-    echo "I quit."
-    exit 1
-elif [[ $distribution != wheezy && $distribution != jessie && $distribution != stretch && $distribution != unstable ]]; then
-    echo
-    echo "I don't know this distribution: $distribution"
-    echo "I quit."
-    exit 1
-fi
-# Check if we are building a snapshot or a release package
-if tar -JxOf !(*.orig).tar.gz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | grep -qE "perfsonar-$distribution-(staging|release)"; then
-    # This a release/stable build (should come from a git tag)
-    RELEASE="staging"
-else
-    # This a snapshot/nightly build
-    RELEASE="snapshot"
-fi
-# ------- End of section from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
+# We get $BUILD_ARCH, $DIST and $RELEASE from the content of the source package
+./${SRC_DIR}/distribution/debian/check-release-repo.sh
+[ $? -eq 0 ] || exit 1
 
 # Loop on all ARCHES for the binary builds
 for ARCH in $ARCHES; do
     # Check if we actually need to build
-    if [[ $ARCH != amd64 ]]; then
-        # ------- This section is taken from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
-        if ! tar -zxOf !(*.orig).tar.gz --wildcards debian/control '*/debian/control' 2>/dev/null | grep -q '^Architecture: any'; then
-            echo -e "\n\033[1;32mI skip building binary independent package on $ARCH\033[0m"
-            continue
-        fi 
-        # ------- End of section from https://perfsonar-dev3.grnoc.iu.edu/jenkins/view/Debian/job/build-debian-binaries/configure
-    fi
-    if  [[ $distribution == unstable && $ARCH =~ arm ]]; then
-        echo -e "\n\033[1;32m$distribution builds on $ARCH are broken, I skip.\033[0m"
+    if [[ $ARCH != amd64 && "$BUILD_ARCH" == "all" ]]; then
+        echo -e "\n\033[1;32mI skip building binary independent package on $ARCH (we only need to build on amd64)\033[0m"
         continue
     fi
 
     # Update cowbuilder chroot
-    echo -e "\n\033[1;32mUpdating cowbuilder environment base-${distribution}-${ARCH}-${RELEASE}.cow\033[0m"
+    echo -e "\n\033[1;32mUpdating cowbuilder environment base-${DIST}-${ARCH}-${RELEASE}.cow\033[0m"
     # We do this through a direct call to pbuilder as cowbuilder doesn't seem to be able to move chroot inside a Docker container FS
     sudo rm -rf /var/cache/pbuilder/temp-update.cow
-    sudo cp -a /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow /var/cache/pbuilder/temp-update.cow
+    sudo cp -a /var/cache/pbuilder/base-${DIST}-${ARCH}-${RELEASE}.cow /var/cache/pbuilder/temp-update.cow
     sudo -E pbuilder update --buildplace /var/cache/pbuilder/temp-update.cow --no-targz
-    sudo rm -rf /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow
-    sudo mv /var/cache/pbuilder/temp-update.cow /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow
+    sudo rm -rf /var/cache/pbuilder/base-${DIST}-${ARCH}-${RELEASE}.cow
+    sudo mv /var/cache/pbuilder/temp-update.cow /var/cache/pbuilder/base-${DIST}-${ARCH}-${RELEASE}.cow
 
     # Build binary package in cowbuilder chroot
-    echo -e "\n\033[1;32mBuilding binary package in base-${distribution}-${ARCH}-${RELEASE}.cow\033[0m"
+    echo -e "\n\033[1;32mBuilding binary package in base-${DIST}-${ARCH}-${RELEASE}.cow\033[0m"
     if [[ ${PKG} = "i2util" ]]; then
         # Special case for i2util because of the bootstrap.sh script the build process contains
-        sudo -E DIST=${distribution} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${distribution} --debbuildopts -B
+        sudo -E DIST=${DIST} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST} --debbuildopts -B
     else
-        sudo -E DIST=${distribution} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${distribution}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${distribution}
+        sudo -E DIST=${DIST} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST}
     fi
 done
 

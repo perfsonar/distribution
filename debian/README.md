@@ -63,6 +63,22 @@ the VM disk size manually.
 This machine will be setup to test a newly built Debian package can be installed
 cleanly with all dependencies solved.
 
+## Jenkins
+The same scripts can be used on a Debian Jenkins slave to do continuous integration
+and builds.  To setup a Debian-9 slave, all is needed is to run the following:
+
+```bash
+git clone https://github.com/perfsonar/distribution.git
+cd distribution/debian
+./build-host-d9-setup.sh
+apt install default-jre-headless jenkins-debian-glue
+```
+
+This will take a bit of time as this script will create a cowbuilder environment
+for each distribution and each architecture that we build Debian packages for. This
+script can be run multiple times if needed, it will recreate the cowbuilder roots
+for perfSONAR builds each time.
+
 ## Scripts
 The Vagrant setup described hereabove is using the different follwoing scripts.
 
