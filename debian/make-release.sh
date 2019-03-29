@@ -145,12 +145,17 @@ else
     fi
     REL="staging"
 fi
-PS_DEB_REP="perfsonar-${REL}"
-# We can have UNRELEASED as distro (we will change it later on), or it must be the correct $PS_DEB_REP
-if [[ "$CH_DISTRO" = "UNRELEASED" || "$CH_DISTRO" = "$PS_DEB_REP" ]]; then
+if [[ "0" == ${UPSTREAM_VERSION##*.} ]]; then
+    # If the last digit of the version number is 0, we are on a minor release
+    PS_DEB_REP="perfsonar-minor-${REL}"
+else
+    # otherwise we are on a patch release
+    PS_DEB_REP="perfsonar-patch-${REL}"
+fi
+if [[ "$CH_DISTRO" = "$PS_DEB_REP" ]]; then
     verbose "The distribution field in the debian/changelog file looks good: $CH_DISTRO."
 else
-    error "The distribution field in the debian/changelog of ${PWD##*\/} should be: $PS_DEB_REP (or UNRELEASED)"
+    error "The distribution field in the debian/changelog of ${PWD##*\/} should be: $PS_DEB_REP"
 fi
 
 # Replace debian/changelog signature line with commiter or DEBIAN_EMAIL info
@@ -213,7 +218,6 @@ fi
 n=`grep -nm 1 " -- " debian/changelog | awk -F ':' '{print $1}'`
 TMP_FILE=`mktemp`
 sed "${n}s/^ -- .* [+-][0-9]\{4\}/${FINISH_LINE}/" debian/changelog > $TMP_FILE
-sed "1s/ UNRELEASED;/ $PS_DEB_REP;/" $TMP_FILE > debian/changelog
 /bin/rm $TMP_FILE
 git add debian/changelog
 

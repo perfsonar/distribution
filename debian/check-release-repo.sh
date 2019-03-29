@@ -24,7 +24,7 @@ fi
 
 # Then $RELEASE from changelog
 `tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/.* \([A-Za-z-]*\);.*/export RELEASE=\1/'`
-if [ ! "$RELEASE" =~ "perfsonar-(release|(minor|patch)-(staging|snapshot))" ]; then
+if [[ ! "$RELEASE" =~ "perfsonar-(release|(minor|patch)-(staging|snapshot))" ]]; then
     echo
     echo "I don't know any perfSONAR repository called $RELEASE."
     echo "I cannot work on that package."
