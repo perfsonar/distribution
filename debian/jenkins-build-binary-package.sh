@@ -23,21 +23,14 @@ fi
 echo "and I'll store both source and binary packages into ${RELEASE}."
 echo
 
-# We use the jenkins-debian-glue key to sign both repositories
-export KEY_ID="8968F5F6"
-
-# pbuilder configuration file to define our repo sources where we get the build dependencies
-#export PBUILDER_CONFIG=mypbuilderrc
-#echo "
-#MIRROR=\"http://ftp.task.gda.pl/debian/\"
-#OTHERMIRROR=\"deb http://ps-deb-repo.qalab.geant.net/repository ${RELEASE} main|deb http://ftp.task.gda.pl/debian ${DIST}-backports main\"
-#DISTRIBUTION=${DIST}
-#BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
-#" > $PBUILDER_CONFIG
-#export distribution=$DIST
-
 # Build the package for the selected architecture and don't remove any other package from repo (default jenkins-debian-glue behavior)
 #export SKIP_MISSING_BINARY_REMOVAL=yes
+
+# Update the cowbuilder environement to make sure we use the latest packages to solve dependencies
+sudo cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow
+
+# We use the jenkins-debian-glue key to sign both repositories
+export KEY_ID="8968F5F6"
 
 # Look for more recent package to build
 for file in *.dsc ; do
@@ -62,16 +55,14 @@ echo "*** Using $sourcefile (version: ${newest_version})"
 if [[ $parent == i2util-debian-source ]]; then
     # Force a binary only build to avoid issue with sources being changed by bootstrap.sh (specific to i2util binary build)
     # Should this be done for all packages or should the i2util build be changed?
-    sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST} --debbuildopts -B
+    sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST} --debbuildopts -sa -B
 else
     sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST} --debbuildopts -sa
 fi
+[ $? -eq 0 ] || exit 1
 
 # Add resulting packages to local repository
 reprepro -b /srv/repository include ${RELEASE} /var/cache/pbuilder/result/${DIST}/${SOURCE_PACKAGE}_*${newest_version}_${architecture}.changes
-
-#/usr/bin/build-and-provide-package
-[ $? -eq 0 ] || exit 1
 
 # Create lintian report in junit format, if jenkins-debian-glue is installed
 if [ -x /usr/bin/lintian-junit-report ]; then
