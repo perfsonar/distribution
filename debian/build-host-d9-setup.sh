@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # This script will augment a basic Debian 9 install to have everything needed to 
 # build perfSONAR Debian packages.  It should be run as root.
+# It can be run subsequently to update an existing setup, but then all the
+# perfSONAR related chroot will be deleted and recreated anew.
 
 # Get repo/package name and build root of shared repo
 [ -v host_pwd ] || host_pwd=`pwd`
@@ -39,9 +41,9 @@ fi
 
 # Install build requirements
 apt-get update
-apt-get install -y git-buildpackage qemu-user-static debootstrap eatmydata lintian cowbuilder vim
+apt-get install -y git-buildpackage qemu-user-static debootstrap lintian cowbuilder vim
 # If the build.vm is a Jessie box, we would need the following backports:
-#apt-get install -y -t stretch-backports debootstrap eatmydata lintian pbuilder
+#apt-get install -y -t stretch-backports debootstrap lintian pbuilder
 apt-get autoremove -y
 
 # Setup build environment

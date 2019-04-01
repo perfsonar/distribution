@@ -10,9 +10,7 @@
 # This scripts makes the assumption that the host machine is a i386/amd64 machine.
 
 # Defaults and initialisations
-PS_REPO="http://downloads.perfsonar.net/debian/"
-# Alternative repo, if above is down
-#PS_REPO="http://ps-deb-repo.qalab.geant.net/debian/"
+PS_REPO="http://ps-deb-repo.qalab.geant.net/debian/"
 if [ -z "$ARCHES" ]; then
     ARCHES="amd64 i386 armhf armel arm64 ppc64el"
 fi
@@ -32,6 +30,7 @@ fi
 unset ERRS
 
 # Create a new cowbuilder chroot and a place to put resulting packages
+rm -rf /var/cache/pbuilder/result/${DIST}
 mkdir -p /var/cache/pbuilder/result/${DIST}
 touch /var/cache/pbuilder/result/${DIST}/Packages
 for ARCH in $ARCHES

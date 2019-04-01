@@ -67,17 +67,28 @@ cleanly with all dependencies solved.
 The same scripts can be used on a Debian Jenkins slave to do continuous integration
 and builds.  To setup a Debian-9 slave, all is needed is to run the following:
 
+- as `jenkins` user
+
 ```bash
 git clone https://github.com/perfsonar/distribution.git
 cd distribution/debian
-./build-host-d9-setup.sh
-apt install default-jre-headless jenkins-debian-glue
+sudo ./build-host-d9-setup.sh
+sudo apt install default-jre-headless
 ```
 
 This will take a bit of time as this script will create a cowbuilder environment
 for each distribution and each architecture that we build Debian packages for. This
-script can be run multiple times if needed, it will recreate the cowbuilder roots
-for perfSONAR builds each time.
+`build-host-d9-setup.sh` script can be run multiple times if needed, it will
+recreate the cowbuilder roots for perfSONAR builds each time.
+
+Additionaly to that, the 3 following scripts need to be used in the Jenkins build
+jobs:
+
+- `build-source-package.sh` to build the source package
+- `jenkins-build-binary-package.sh` to build the binary packages
+- `jenkins-repo-publish.sh` to publish resutling packages to the staging and public
+repository
+
 
 ## Scripts
 The Vagrant setup described hereabove is using the different follwoing scripts.
