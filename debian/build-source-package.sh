@@ -90,9 +90,7 @@ if [ -z $DEBIAN_TAG ]; then
     echo "\nBuilding snapshot package of ${PKG} from ${DEBIAN_BRANCH} and ${UPSTREAM_BRANCH}.\n"
     git merge --no-commit ${UPSTREAM_BRANCH}
     # We set the author of the Debian Changelog, only for snapshot builds (this doesn't seem to be used by gbp dch :(
-    export DEBEMAIL="perfsonar-debian Autobuilder <debian@perfsonar.net>"
-    # We can ignore NMU related warnings from LINTIAN as this package is not to be posted to official Debian repo
-    LINTIAN_ARGS="--suppress-tags changelog-should-mention-nmu,source-nmu-has-incorrect-version-number"
+    export DEBEMAIL="perfSONAR developers <debian@perfsonar.net>"
     # And we generate the changelog ourselves, with a version number suitable for an upstream snapshot
     timestamp=`date +%Y%m%d%H%M%S`
     if ! grep -q '(native)' debian/source/format; then
@@ -192,10 +190,5 @@ echo "\nPackage source for ${PKG} is built.\n"
 
 # Run Lintian on built package
 cd ..
-# Create lintian report in junit format, if jenkins-debian-glue is installed
-if [ -x /usr/bin/lintian-junit-report ]; then
-    /usr/bin/lintian-junit-report ${PKG}*.dsc > lintian.xml
-else
-    lintian ${LINTIAN_ARGS} --show-overrides ${PKG}*.dsc
-fi
+lintian --show-overrides ${PKG}*.dsc
 

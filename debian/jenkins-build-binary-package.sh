@@ -29,7 +29,7 @@ echo
 # Update the cowbuilder environement to make sure we use the latest packages to solve dependencies
 sudo cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow
 
-# We use the jenkins-debian-glue key to sign both repositories
+# We use the perfSONAR Debian Archive Automatic Signing Key to sign both repositories
 export KEY_ID="8968F5F6"
 
 # Look for more recent package to build
@@ -64,9 +64,5 @@ fi
 # Add resulting packages to local repository
 reprepro -b /srv/repository include ${RELEASE} /var/cache/pbuilder/result/${DIST}/${SOURCE_PACKAGE}_*${newest_version}_${architecture}.changes
 
-# Create lintian report in junit format, if jenkins-debian-glue is installed
-if [ -x /usr/bin/lintian-junit-report ]; then
-    /usr/bin/lintian-junit-report ${PKG}*.changes > lintian.xml
-else
-    lintian ${LINTIAN_ARGS} ${PKG}*.changes
-fi
+# Run Lintian on built package
+lintian ${PKG}*.changes

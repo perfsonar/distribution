@@ -1,0 +1,5 @@
+# Rules to use when parsing Jenkins log output
+# See https://plugins.jenkins.io/log-parser for reference
+
+ok /^dpkg-buildpackage: warning: building a source package without cleaning up as you asked/
+ok /^dpkg-buildpackage: warning: not signing UNRELEASED build/
