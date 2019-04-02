@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script creates a cowbuilder image for the given Debian distribution and for different architectures.
 # It understand the following ENV variables:
 #   - ARCHES: the architectures that we create an image for

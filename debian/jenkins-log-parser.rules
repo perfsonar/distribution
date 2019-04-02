@@ -3,3 +3,22 @@
 
 ok /^dpkg-buildpackage: warning: building a source package without cleaning up as you asked/
 ok /^dpkg-buildpackage: warning: not signing UNRELEASED build/
+
+# suppress warnings from commit messages
+ok /HEAD is now at .+/
+ok /^Commit message: ".*"/
+
+# match line starting with 'error ', case-insensitive
+error /(?i)^error /
+
+# list of warnings here...
+warning /[Ww]arning/
+warning /WARNING/
+# Lintian warning
+warning /^W: /
+
+# create a quick access link to lines in the report containing 'INFO'
+info /^INFO.*/
+info /^dpkg-buildpackage: info: /
+info /^dpkg-source: info: /
+

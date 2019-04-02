@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script publishes the packages build locally to the remote public repository
 # It is meant to be run after new packages have been built
 

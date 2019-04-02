@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # extglob is needed for the call to tar
 shopt -s extglob
 
@@ -22,10 +22,10 @@ elif [[ $DIST != wheezy && $DIST != jessie && $DIST != stretch ]]; then
 fi
 
 # Then $RELEASE from changelog
-`tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/.* (\([0-9.]*\).*) \([A-Za-z-]*\);.*/export VERSION=\1; export RELEASE=\2/'`
+`tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/.* (\([0-9.]*\).*) \([A-Za-z-]*\);.*/export VERSION=\1 RELEASE=\2/'`
 if [[ "$RELEASE" == "UNRELEASED" ]]; then
     # Need to dig deeper...
-    if [[ "0" == ${VERSION##*.} ]]; then
+    if [[ "0" == "${VERSION##*.}" ]]; then
         # If the last digit of the version number is 0, we are on a minor release
         export RELEASE=perfsonar-minor-snapshot
     else

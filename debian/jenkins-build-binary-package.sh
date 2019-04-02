@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script build a Debian binary package from a source package
 # It is meant to be run from Jenkins
 

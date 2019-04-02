@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # extglob is needed for the call to tar in the binary build
 shopt -s extglob
 

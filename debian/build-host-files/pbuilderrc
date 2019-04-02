@@ -10,9 +10,6 @@ if [ -n "${DIST}" ]; then
     BUILDRESULT="/var/cache/pbuilder/result/$DIST/"
     # BASETGZ is not used by cowbuilder (--no-targz calls to pbuilder)
     BASETGZ="`dirname $BASETGZ`/$DIST-base.tgz"
-    # Local dir for local dependencies
-    OTHERMIRROR="deb [trusted=yes] file:///var/cache/pbuilder/result/$DIST ./"
-    BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
 fi
 EXTRAPACKAGES="apt-utils"
 
