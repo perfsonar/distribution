@@ -144,12 +144,7 @@ for ARCH in $ARCHES; do
 
     # Build binary package in cowbuilder chroot
     echo -e "\n\033[1;32mBuilding binary package in base-${DIST}-${ARCH}-${RELEASE}.cow\033[0m"
-    if [[ ${PKG} = "i2util" ]]; then
-        # Special case for i2util because of the bootstrap.sh script the build process contains
-        sudo -E DIST=${DIST} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST} --debbuildopts -B
-    else
-        sudo -E DIST=${DIST} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST}
-    fi
+    sudo -E DIST=${DIST} ARCH=${ARCH} cowbuilder --build ./${PKG}*.dsc --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST} --debbuildopts "-sa -b"
 done
 
 # TODO: How to capture the exit code of the build???

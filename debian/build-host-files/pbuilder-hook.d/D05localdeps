@@ -1,5 +1,0 @@
-#!/bin/bash
-# Refresh the local packages repo
-
-(cd /var/cache/pbuilder/result/${DIST}; apt-ftparchive packages . > Packages)
-apt-get update

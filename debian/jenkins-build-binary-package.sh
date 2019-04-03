@@ -52,13 +52,7 @@ echo "*** Using $sourcefile (version: ${newest_version})"
 # TODO: How to run autopkg without Debian Jenkins Glue?
 #export ADT=skip
 
-if [[ $parent == i2util-debian-source ]]; then
-    # Force a binary only build to avoid issue with sources being changed by bootstrap.sh (specific to i2util binary build)
-    # Should this be done for all packages or should the i2util build be changed?
-    sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST} --debbuildopts -sa -B
-else
-    sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST} --debbuildopts -sa
-fi
+sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow --buildresult /var/cache/pbuilder/result/${DIST} --debbuildopts "-sa -b"
 [ $? -eq 0 ] || exit 1
 
 # Add resulting packages to local repository
