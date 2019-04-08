@@ -23,9 +23,6 @@ fi
 echo "and I'll store both source and binary packages into ${RELEASE}."
 echo
 
-# Build the package for the selected architecture and don't remove any other package from repo (default jenkins-debian-glue behavior)
-#export SKIP_MISSING_BINARY_REMOVAL=yes
-
 # Update the cowbuilder environement to make sure we use the latest packages to solve dependencies
 sudo cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow
 

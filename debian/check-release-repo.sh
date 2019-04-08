@@ -10,7 +10,7 @@ shopt -s extglob
 # First get $DIST from gbp.conf
 ls -la
 echo
-`tar -JxOf !(*.orig).tar.xz --wildcards debian/gbp.conf '*/debian/gbp.conf' 2>/dev/null | awk '/DIST=/ {print "export "$3}'`
+`tar -JxOf !(*.orig).tar.xz --wildcards debian/gbp.conf '*/debian/gbp.conf' 2>/dev/null | awk '/DIST=/ {print "export "$3} /^debian-branch/ {print "BRANCH="$3}'`
 if [[ "$DIST" = "" ]]; then
     echo "No distribution field (DIST=) found in the source package (in gbp.conf), are you sure it is a Debian package?"
     echo "I quit."
@@ -22,11 +22,10 @@ elif [[ $DIST != wheezy && $DIST != jessie && $DIST != stretch ]]; then
 fi
 
 # Then $RELEASE from changelog
-`tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/.* (\([0-9.]*\).*) \([A-Za-z-]*\);.*/export VERSION=\1 RELEASE=\2/'`
+`tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/\(.*\) (\([0-9.]*\).*) \([A-Za-z-]*\);.*/export PACKAGE_NAME=\1 VERSION=\2 RELEASE=\3/'`
 if [[ "$RELEASE" == "UNRELEASED" ]]; then
-    # Need to dig deeper...
-    if [[ "0" == "${VERSION##*.}" ]]; then
-        # If the last digit of the version number is 0, we are on a minor release
+    if [[ "0" == "${BRANCH##*.}" ]]; then
+        # If the last digit of the branch number is 0, we are on a minor release
         export RELEASE=perfsonar-minor-snapshot
     else
         # otherwise we are on a patch release
@@ -47,5 +46,5 @@ else
 fi
 
 # Conclusion
-echo "I've found a package description for to be built for $BUILD_ARCH architectures on $DIST and to be released in the $RELEASE repository."
+echo "I've found $PACKAGE_NAME version $VERSION to be built for $BUILD_ARCH arch(es) on $DIST and to be released in the $RELEASE repo."
 

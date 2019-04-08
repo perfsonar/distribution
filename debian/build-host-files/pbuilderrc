@@ -10,6 +10,8 @@ if [ -n "${DIST}" ]; then
     BUILDRESULT="/var/cache/pbuilder/result/$DIST/"
     # BASETGZ is not used by cowbuilder (--no-targz calls to pbuilder)
     BASETGZ="`dirname $BASETGZ`/$DIST-base.tgz"
+    # Mount result directory to solve dependencies locally, when needed
+    BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
 fi
 EXTRAPACKAGES="apt-utils"
 

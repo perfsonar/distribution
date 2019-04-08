@@ -42,14 +42,12 @@ fi
 # Install build requirements
 apt-get update
 apt-get install -y git-buildpackage qemu-user-static debootstrap lintian cowbuilder vim
-# If the build.vm is a Jessie box, we would need the following backports:
-#apt-get install -y -t stretch-backports debootstrap lintian pbuilder
 apt-get autoremove -y
 
 # Setup build environment
 mkdir -p /var/cache/pbuilder/hook.d/
 echo "# empty file" > /var/cache/pbuilder/hook.d/C99empty
-cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/pbuilderrc /root/.pbuilderrc
+cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/pbuilderrc.root /root/.pbuilderrc
 cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/scripts/cowbuilder-setup /root/
 
 # Create cowbuilder chroot

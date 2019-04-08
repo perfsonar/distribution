@@ -1,0 +1,10 @@
+# Our hooks directory
+HOOKDIR="/var/cache/pbuilder/hook.d"
+USERUNSHM=yes
+
+# Specific settings when building for multiple distros
+if [ -n "${DIST}" ]; then
+    DISTRIBUTION="$DIST"
+fi
+EXTRAPACKAGES="apt-utils"
+
