@@ -14,6 +14,8 @@ if [ -n "${DIST}" ]; then
     BASETGZ="`dirname $BASETGZ`/$DIST-base.tgz"
     # Mount result directory to solve dependencies locally, when needed
     BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
+    # Dist specific aptcache
+    APTCACHE="/var/cache/pbuilder/$DIST/aptcache/"
 fi
 
 # We need some extra settings and packages in the cowbuilder chroot to make it faster

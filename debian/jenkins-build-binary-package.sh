@@ -23,9 +23,6 @@ fi
 echo "and I'll store both source and binary packages into ${RELEASE}."
 echo
 
-# Update the cowbuilder environement to make sure we use the latest packages to solve dependencies
-sudo cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow
-
 # We use the perfSONAR Debian Archive Automatic Signing Key to sign both repositories
 export KEY_ID="8968F5F6"
 
@@ -54,6 +51,9 @@ sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --b
 
 # Add resulting packages to local repository
 reprepro -b /srv/repository include ${RELEASE} /var/cache/pbuilder/result/${DIST}/${SOURCE_PACKAGE}_*${newest_version}_${architecture}.changes
+
+# Update the cowbuilder environement to make sure we use the latest packages to solve dependencies on the next builds
+sudo cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow
 
 # Run Lintian on built package
 lintian ${PKG}*.changes

@@ -16,6 +16,11 @@ Vagrant.configure("2") do |config|
     # Set box to Debian Contrib 9 image (see https://app.vagrantup.com/debian/ )
     config.vm.box = "debian/contrib-stretch64"
 
+    # Increase RAM for better performances
+    config.vm.provider "virtualbox" do |vb|
+        vb.memory = 2048
+    end
+
     # Build a build machine as the default
     config.vm.define "d9-build-ps", primary: true, autostart: true do |build|
         # Set a meaningful hostname
