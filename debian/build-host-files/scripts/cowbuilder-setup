@@ -58,6 +58,7 @@ do
     # Update the cowbuilder chroot with new sources and with the perfSONAR repo key
     export TMP_SCRIPT=$(mktemp)
     echo "#!/bin/sh" > ${TMP_SCRIPT}
+    echo 'echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup' >> ${TMP_SCRIPT}
     if [[ "$DIST" == "stretch" ]]; then
         echo "apt-get install -y gnupg dirmngr" >> ${TMP_SCRIPT}
     fi

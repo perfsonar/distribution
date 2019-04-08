@@ -41,7 +41,7 @@ fi
 
 # Install build requirements
 apt-get update
-apt-get install -y git-buildpackage qemu-user-static debootstrap lintian cowbuilder vim
+apt-get install -y git-buildpackage qemu-user-static debootstrap lintian cowbuilder vim eatmydata
 apt-get autoremove -y
 
 # Setup build environment

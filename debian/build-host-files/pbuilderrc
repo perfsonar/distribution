@@ -1,7 +1,9 @@
 # Our hooks directory
 HOOKDIR="/var/cache/pbuilder/hook.d"
+
+# Special needs to build perfSONAR packages, we need the network and /dev/shm
 USENETWORK=yes
-USERUNSHM=yes
+USESHM=yes
 
 # Specific settings when building for multiple distros
 if [ -n "${DIST}" ]; then
@@ -13,5 +15,9 @@ if [ -n "${DIST}" ]; then
     # Mount result directory to solve dependencies locally, when needed
     BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
 fi
-EXTRAPACKAGES="apt-utils"
+
+# We need some extra settings and packages in the cowbuilder chroot to make it faster
+APTCACHEHARDLINK=no
+EXTRAPACKAGES="apt-utils eatmydata"
+export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}libeatmydata.so"
 
