@@ -50,7 +50,7 @@ sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --b
 [ $? -eq 0 ] || exit 1
 
 # Add resulting packages to local repository
-reprepro -b /srv/repository include ${RELEASE} /var/cache/pbuilder/result/${DIST}/${SOURCE_PACKAGE}_*${newest_version}_${architecture}.changes
+reprepro -v -b /srv/repository include ${RELEASE} /var/cache/pbuilder/result/${DIST}/${SOURCE_PACKAGE}_*${newest_version}_${architecture}.changes
 
 # Update the cowbuilder environement to make sure we use the latest packages to solve dependencies on the next builds
 sudo cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow

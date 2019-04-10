@@ -39,7 +39,7 @@ if [[ "$RELEASE" =~ "perfsonar-(release|(minor|patch)-(staging|snapshot))" ]]; t
 fi
 
 # And ARCH from control
-if ! tar -zxOf !(*.orig).tar.gz --wildcards debian/control '*/debian/control' 2>/dev/null | grep '^Architecture: ' | grep -qv 'Architecture: all'; then
+if ! tar -JxOf !(*.orig).tar.xz --wildcards debian/control '*/debian/control' 2>/dev/null | grep '^Architecture: ' | grep -qv 'Architecture: all'; then
     export BUILD_ARCH="all"
 else
     export BUILD_ARCH="any or some"
