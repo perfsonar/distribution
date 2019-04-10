@@ -23,3 +23,6 @@ APTCACHEHARDLINK=no
 EXTRAPACKAGES="apt-utils eatmydata"
 export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}libeatmydata.so"
 
+# Aptitude dependency resolver is segfaulting on foreign architectures for OWAMP builds
+PBUILDERSATISFYDEPENDSCMD=/usr/lib/pbuilder/pbuilder-satisfydepends-apt
+

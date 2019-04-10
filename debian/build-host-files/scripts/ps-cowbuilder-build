@@ -10,7 +10,8 @@ show_help() {
     The build happens for the $DIST Debian distro (\$DIST should be set in your ENV).
 
     Arguments understood:
-        -a: architecture to build the package for (defaults to amd64)
+        -a: architecture(s) to build the package for (defaults to amd64)
+            multiple architectures can be given like "amd64 ppc64el"
         -b: git debian branch to build from (defaults to master)
             (upstream is read from gbp.conf)
         -k: keep locally built packages (can be useful to solve dependencies)
@@ -106,10 +107,8 @@ else
 fi
 
 cd ..
-# We will need this because it will be removed from the SRC_DIR
-cp ./${SRC_DIR}/distribution/debian/check-release-repo.sh .
 # Build the source package
-./${SRC_DIR}/distribution/debian/build-source-package.sh
+${REPO_LOC}/distribution/debian/build-source-package.sh
 [ $? -eq 0 ] || exit 1
 
 PKG=`awk '/^Source:/ {print $2}' *.dsc`
@@ -122,7 +121,7 @@ if [ ${source_only} ]; then
 fi
 
 # We get $BUILD_ARCH, $DIST and $RELEASE from the content of the source package
-. ./check-release-repo.sh
+. ${REPO_LOC}/distribution/debian/check-release-repo.sh
 [ $? -eq 0 ] || exit 1
 
 # Loop on all ARCHES for the binary builds
