@@ -42,6 +42,10 @@ done
 sourcefile="${SOURCE_PACKAGE}"_*"${newest_version}".dsc
 echo "*** Using $sourcefile (version: ${newest_version})"
 
+# TODO: Should put a lock around here to avoid having 2 updates at the same time.
+# Update the cowbuilder environement to make sure we use the latest packages to solve dependencies in our build
+sudo cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow
+
 # Skip autopkgtest for now, they are too slow
 # TODO: How to run autopkg without Debian Jenkins Glue?
 #export ADT=skip
@@ -51,9 +55,6 @@ sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --b
 
 # Add resulting packages to local repository
 reprepro -v -b /srv/repository include ${RELEASE} /var/cache/pbuilder/result/${DIST}/${SOURCE_PACKAGE}_*${newest_version}_${architecture}.changes
-
-# Update the cowbuilder environement to make sure we use the latest packages to solve dependencies on the next builds
-sudo cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${architecture}-${RELEASE}.cow
 
 # Run Lintian on built package
 lintian ${PKG}*.changes
