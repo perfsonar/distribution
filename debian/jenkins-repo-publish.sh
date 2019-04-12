@@ -43,7 +43,7 @@ fi
 echo
 echo "$OUT"
 # Create a properties file per release that got updated.
-PROP=`echo "$OUT" | awk '/^Retracking perfsonar-[a-z]+-[a-z]+.../ {gsub("\.\.\.","",$2);print "distro="$2}'`
+PROP=`echo "$OUT" | awk '/^Retracking perfsonar-[a-z]+-[a-z]+.../ {gsub("\.\.\.","",$2);print "DISTRO="$2}'`
 for p in $PROP; do
     echo $p > ${p##*=}.properties
 done
