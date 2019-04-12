@@ -4,6 +4,7 @@
 
 ## reprepro defaults
 export REPREPRO_BASE_DIR=/srv/repository
+rm -f *.properties
 
 ## Get repositories content
 set +x
@@ -14,10 +15,8 @@ echo "Local repositories are in /srv/repository here is their current content"
 ls -la /srv/repository
 ls -la /srv/repository/dists
 
-for DIST in minor patch
-    do
-    for RELEASE in staging snapshot
-        do
+for DIST in minor patch; do
+    for RELEASE in staging snapshot; do
         echo
         # Check the current content of the repository
         REPO="perfsonar-${DIST}-${RELEASE}"
@@ -36,11 +35,18 @@ rsync -av --delete /srv/repository/ jenkins@ps-deb-repo.qalab.geant.net:/var/www
 ssh jenkins@ps-deb-repo.qalab.geant.net "~/deb-repo-info.pl -repo /var/www/html/repo-from-jenkins -html > /var/www/html/repo-from-jenkins/index.html"
 echo
 echo "Copy new packages into the final public repository (snapshot and staging only) and update the description page"
-ssh jenkins@ps-deb-repo.qalab.geant.net "reprepro -b /var/www/html/debian update perfsonar-patch-snapshot perfsonar-patch-staging perfsonar-minor-snapshot perfsonar-minor-staging"
+OUT=`ssh jenkins@ps-deb-repo.qalab.geant.net "reprepro -b /var/www/html/debian update perfsonar-patch-snapshot perfsonar-patch-staging perfsonar-minor-snapshot perfsonar-minor-staging" 2>&1`
 if [ ! $? -eq 0 ]; then
-    echo "The main repository didn't want to take in the new snapshot and staging packages.  Update failed"
+    echo "The main repository didn't want to take in the new snapshot and staging packages.  Update failed!"
     exit 1
 fi
+echo
+echo "$OUT"
+# Create a properties file per release that got updated.
+PROP=`echo "$OUT" | awk '/^Retracking perfsonar-[a-z]+-[a-z]+.../ {gsub("\.\.\.","",$2);print "distro="$2}'`
+for p in $PROP; do
+    echo $p > ${p##*=}.properties
+done
 ssh jenkins@ps-deb-repo.qalab.geant.net "~/deb-repo-info.pl -repo /var/www/html/debian -html > /var/www/html/debian/index.html"
 
 # testing instance, should be removed when moving into production
