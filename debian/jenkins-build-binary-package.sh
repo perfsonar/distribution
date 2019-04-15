@@ -47,7 +47,7 @@ echo "*** Using $sourcefile (version: ${newest_version})"
 #export ADT=skip
 
 # Wait if a cowbuilder update is in progress
-while -f ~/cowbuilder-base-${DIST}-${architecture}-${RELEASE}-update.lock; do
+while test -f ~/cowbuilder-base-${DIST}-${architecture}-${RELEASE}-update.lock; do
     sleep 2
 done
 
