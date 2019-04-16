@@ -185,7 +185,8 @@ dpkg-buildpackage ${dpkgsign} -nc -d -S -i -I --source-option=--unapply-patches
 if [ "$pscheduler_dir_level" ]; then
     # With pscheduler repository structure, we must move the artefacts some levels up
     cd ..
-    mv ${package}_* "${pscheduler_dir_level}/.."
+    ls -l
+    mv -v ${package}_* "${pscheduler_dir_level}/.."
     cd ${pscheduler_dir_level}
 fi
 echo "\nPackage source for ${PKG} is built.\n"
