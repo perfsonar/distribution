@@ -193,5 +193,4 @@ echo "\nPackage source for ${PKG} is built.\n"
 
 # Run Lintian on built package
 cd ..
-pwd; ls -l
 lintian --show-overrides ${PKG}*.dsc
