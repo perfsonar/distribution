@@ -14,6 +14,7 @@
 # Configuration
 SRC_DIR='source'
 GIT_BUILDING_REPO='distribution'
+BASE_DIR=$(pwd)
 
 # Trick to enable the Git parameter plugin to work with the source directory where we checked out
 # the source code. Otherwise, the Git parameter plugin cannot find the tags existing in the repository
@@ -185,8 +186,8 @@ dpkg-buildpackage ${dpkgsign} -nc -d -S -i -I --source-option=--unapply-patches
 if [ "$pscheduler_dir_level" ]; then
     # With pscheduler repository structure, we must move the artefacts some levels up
     cd ..
-    mv ${package}_* "${pscheduler_dir_level}/.."
-    cd ${pscheduler_dir_level}
+    mv ${package}_* ${BASE_DIR}
+    cd ${BASE_DIR}/${SRC_DIR}
 fi
 echo "\nPackage source for ${PKG} is built.\n"
 
