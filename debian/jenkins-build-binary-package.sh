@@ -58,5 +58,4 @@ sudo -E DIST=${DIST} ARCH=${architecture} cowbuilder --build ./${sourcefile} --b
 reprepro -v -b /srv/repository include ${RELEASE} /var/cache/pbuilder/result/${DIST}/${SOURCE_PACKAGE}_*${newest_version}_${architecture}.changes
 
 # Run Lintian on built package
-lintian ${PKG}*.changes
-
+lintian --suppress-tags bad-distribution-in-changes-file ${PKG}*.changes
