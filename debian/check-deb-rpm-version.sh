@@ -23,7 +23,7 @@ case ${pkg} in
         exit
         ;;
 
-    python-detach|python-jsonschema|python-psycopg2)
+    jq|python-detach|python-jsonschema|python-psycopg2)
         echo "$pkg doesn't exist here for CentOS, we won't check its version."
         exit
         ;;
