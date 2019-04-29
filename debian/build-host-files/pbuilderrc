@@ -16,13 +16,15 @@ if [ -n "${DIST}" ]; then
     BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
     # Dist specific aptcache
     APTCACHE="/var/cache/pbuilder/$DIST/aptcache/"
+    if [ "${DIST}" == "stretch" ]; then
+        # The default dependency resolver (aptitude) is segfaulting on foreign architectures
+        # for OWAMP builds, we use apt instead (which is not available in jessie).
+        PBUILDERSATISFYDEPENDSCMD=/usr/lib/pbuilder/pbuilder-satisfydepends-apt
+    fi
 fi
 
 # We need some extra settings and packages in the cowbuilder chroot to make it faster
 APTCACHEHARDLINK=no
 EXTRAPACKAGES="apt-utils eatmydata"
 export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}libeatmydata.so"
-
-# Aptitude dependency resolver is segfaulting on foreign architectures for OWAMP builds
-PBUILDERSATISFYDEPENDSCMD=/usr/lib/pbuilder/pbuilder-satisfydepends-apt
 
