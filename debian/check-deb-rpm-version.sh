@@ -17,13 +17,13 @@ if [ ! -d $pkg ]; then
 fi
 
 # Special packages
-case "${pkg}" in
-    "pscheduler-rpm")
+case ${pkg} in
+    pscheduler-rpm)
         echo "$pkg doesn't exist here for Debian, we won't check its version."
         exit
         ;;
 
-    "python-psycopg2")
+    python-detach|python-jsonschema|python-psycopg2)
         echo "$pkg doesn't exist here for CentOS, we won't check its version."
         exit
         ;;

@@ -37,6 +37,8 @@ echo
 echo "Copy new packages into the final public repository (snapshot and staging only) and update the description page"
 OUT=`ssh jenkins@ps-deb-repo.qalab.geant.net "reprepro -b /var/www/html/debian update perfsonar-patch-snapshot perfsonar-patch-staging perfsonar-minor-snapshot perfsonar-minor-staging" 2>&1`
 if [ ! $? -eq 0 ]; then
+    echo
+    echo "$OUT"
     echo "The main repository didn't want to take in the new snapshot and staging packages.  Update failed!"
     exit 1
 fi

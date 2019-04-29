@@ -15,6 +15,8 @@
 SRC_DIR='source'
 GIT_BUILDING_REPO='distribution'
 BASE_DIR=$(pwd)
+MY_DIR=$(dirname "$0")
+echo $MY_DIR
 
 # Trick to enable the Git parameter plugin to work with the source directory where we checked out
 # the source code. Otherwise, the Git parameter plugin cannot find the tags existing in the repository
@@ -138,7 +140,7 @@ if [ "$pscheduler_dir_level" ]; then
         cd ../$pscheduler_dir_level
         # We first check that the RPM version matches the DEB version (but not for minor-packages)
         if ! git remote -v show | grep minor-packages ; then
-            if ! distribution/debian/check-deb-rpm-version.sh ${package_dir} ; then
+            if ! ${MY_DIR}/check-deb-rpm-version.sh ${package_dir} ; then
                 pwd
                 exit 1
             fi
