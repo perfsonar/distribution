@@ -32,7 +32,10 @@ if [[ "$RELEASE" == "UNRELEASED" ]]; then
         export RELEASE=perfsonar-patch-snapshot
     fi
 fi
-if [[ "$RELEASE" =~ "perfsonar-(release|(minor|patch)-(staging|snapshot))" ]]; then
+if [[ "$RELEASE" == "perfsonar-jessie-staging" ]]; then
+    export RELEASE=perfsonar-patch-staging
+fi
+if [[ ! $RELEASE =~ perfsonar-(release|(minor|patch)-(staging|snapshot)) ]]; then
     echo "I don't know any perfSONAR repository called $RELEASE."
     echo "I cannot work on that package."
     exit 1
