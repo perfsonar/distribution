@@ -11,6 +11,12 @@ if [[ $architecture != amd64 && "$BUILD_ARCH" == "all" ]]; then
     exit 0
 fi
 
+if [[ "${DIST}" == "jessie" && $architecture =~ (arm64|ppc64el) ]]; then
+    echo "There is no more support for $architecture port for Jessie LTS"
+    echo "I will not try to build those packages."
+    exit 0
+fi
+
 # Check if repo exist, should be ok from check-release-repo.sh but we never know…
 echo -n "I'll build binary packages in ${DIST}-$architecture "
 reprepro -b /srv/repository check ${RELEASE} 2>/dev/null
