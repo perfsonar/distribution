@@ -106,9 +106,9 @@ if [ -z $DEBIAN_TAG ]; then
         pkg_revision=""
     fi
     # pscheduler/minor-packages special
-    if [ -e ../${package}_${upstream_version}.orig.tar.gz ] ||
-        [ -e ../${package}_${upstream_version}.orig.tar.xz ] ||
-        [ -e ../${package}_${upstream_version}.orig.tar.bz2 ]; then
+    if [ -e ../${package}_${upstream_version#*:}.orig.tar.gz ] ||
+        [ -e ../${package}_${upstream_version#*:}.orig.tar.xz ] ||
+        [ -e ../${package}_${upstream_version#*:}.orig.tar.bz2 ]; then
         # We have the orig tarball in the repo, we only change the release number of the package.
         new_version=${upstream_version}${pkg_revision}~${timestamp}
     else
