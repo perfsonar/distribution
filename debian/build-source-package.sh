@@ -183,7 +183,11 @@ fi
 # Build the source package
 # TODO: we should do that through cowbuilder/pbuilder to make sure the build environment is minimal
 # The minimal environement is created with `debootstrap --variant=minbase`
-dpkg-buildpackage ${dpkgsign} -nc -d -S -i -I --source-option=--unapply-patches
+buildpackage_options="-nc -d -S -i -I"
+if ! grep -q '(native)' debian/source/format ; then
+    buildpackage_options=$buildpackage_options" --source-option=--unapply-patches"
+fi
+dpkg-buildpackage ${dpkgsign} ${buildpackage_options}
 [ $? -eq 0 ] || exit 1
 if [ "$pscheduler_dir_level" ]; then
     # With pscheduler repository structure, we must move the artefacts some levels up
