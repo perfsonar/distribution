@@ -1,7 +1,11 @@
 #!/bin/sh
 # pbuilder hook script: invoke shell if build fails.
 
+export HOME=/root
 apt-get install -y vim less bash
+cat << EOF > ~/.vimrc
+set mouse-=a
+EOF
 cd /tmp/buildd/*/debian/..
 /bin/bash < /dev/tty > /dev/tty 2> /dev/tty
 
