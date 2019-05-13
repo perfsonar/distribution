@@ -96,25 +96,10 @@ if [ -z $DEBIAN_TAG ]; then
     export DEBEMAIL="perfSONAR developers <debian@perfsonar.net>"
     # And we generate the changelog ourselves, with a version number suitable for an upstream snapshot
     timestamp=`date +%Y%m%d%H%M%S`
-    if ! grep -q '(native)' debian/source/format; then
-        upstream_version=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)\(-[^-]*\)$/\1/p'`
-        pkg_revision=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)\(-[^-]*\)$/\2/p'`
-    else
-        # For native packages, we take the full version string as upstream_version
-        upstream_version=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)$/\1/p'`
-        # And we don't use any revision number
-        pkg_revision=""
-    fi
-    # pscheduler/minor-packages special
-    if [ -e ../${package}_${upstream_version#*:}.orig.tar.gz ] ||
-        [ -e ../${package}_${upstream_version#*:}.orig.tar.xz ] ||
-        [ -e ../${package}_${upstream_version#*:}.orig.tar.bz2 ]; then
-        # We have the orig tarball in the repo, we only change the release number of the package.
-        new_version=${upstream_version}${pkg_revision}~${timestamp}
-    else
-        new_version=${upstream_version}+${timestamp}${pkg_revision}
-    fi
-    dch -b --distribution=UNRELEASED --newversion=${new_version} -- 'SNAPSHOT autobuild for '${upstream_version}' via Jenkins'
+    current_version=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)$/\1/p'`
+    # The new version must be below the final (without timestamp), hence using the ~
+    new_version=${current_version}~${timestamp}
+    dch -b --distribution=UNRELEASED --newversion=${new_version} -- 'SNAPSHOT autobuild for '${current_version}' via Jenkins'
     GBP_OPTS="$GBP_OPTS --git-upstream-tree=branch --git-upstream-branch=${UPSTREAM_BRANCH}"
     dpkgsign="-k8968F5F6"
 else

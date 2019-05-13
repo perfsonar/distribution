@@ -53,7 +53,22 @@ do
     fi
 done
 
-for PS_REL in perfsonar-minor-staging perfsonar-minor-snapshot perfsonar-patch-staging perfsonar-patch-snapshot
+# List of perfSONAR release supported per Debian/Ubuntu release
+case $DIST in
+    jessie)
+        PS_REL_LIST="perfsonar-patch-staging perfsonar-patch-snapshot"
+        ;;
+    stretch)
+        PS_REL_LIST="perfsonar-minor-staging perfsonar-minor-snapshot"
+        ;;
+    *)
+        echo "I'm not sure which perfSONAR release is supported for $DIST"
+        echo "I'll stop here."
+        exit 1
+        ;;
+esac
+
+for PS_REL in $PS_REL_LIST
 do
     # Update the cowbuilder chroot with speed increase, new sources and the perfSONAR repo key
     export TMP_SCRIPT=$(mktemp)
