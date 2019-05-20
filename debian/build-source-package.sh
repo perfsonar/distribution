@@ -86,7 +86,7 @@ if [ -z $DEBIAN_TAG ]; then
     # The new version must be below the final (without timestamp), hence using the ~
     new_version=${current_version}~${timestamp}
     dch -b --distribution=UNRELEASED --newversion=${new_version} -- 'SNAPSHOT autobuild for '${current_version}' via Jenkins'
-    GBP_OPTS="$GBP_OPTS --git-upstream-tree=treeish --git-upstream-branch=HEAD"
+    GBP_OPTS="$GBP_OPTS --git-upstream-tree=HEAD"
     dpkgsign="-k8968F5F6"
 else
     # If we have a tag, we take the source from the git tag
