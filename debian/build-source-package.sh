@@ -45,6 +45,9 @@ if [ ! -f debian/gbp.conf ]; then
     fi
 fi
 
+# Get the current branch, before making any change
+CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+
 # Check the tag parameter, it has precedence over the branch parameter
 DEBIAN_TAG=$tag
 [ -n $DEBIAN_TAG ] && git checkout ${DEBIAN_TAG}
@@ -72,7 +75,7 @@ esac
 # We differentiate snapshot and release builds
 if [ -z $DEBIAN_TAG ]; then
     # If we don't have a tag, we take the source from the current branch and merge upstream in it so we have the latest changes
-    DEBIAN_BRANCH=`git rev-parse --abbrev-ref HEAD`
+    DEBIAN_BRANCH=$CURRENT_BRANCH
     echo -e "\nBuilding snapshot package of ${PKG} from ${DEBIAN_BRANCH} and ${UPSTREAM_BRANCH}.\n"
     git merge --no-commit ${UPSTREAM_BRANCH}
     # We set the author of the Debian Changelog, only for snapshot builds (this doesn't seem to be used by gbp dch :(
