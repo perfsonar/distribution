@@ -76,7 +76,7 @@ esac
 if [ -z $DEBIAN_TAG ]; then
     # If we don't have a tag, we take the source from the current branch and merge upstream in it so we have the latest changes
     DEBIAN_BRANCH=$CURRENT_BRANCH
-    echo -e "\nBuilding snapshot package of ${PKG} from ${DEBIAN_BRANCH} and ${UPSTREAM_BRANCH}.\n"
+    echo -e "\nBuilding snapshot package of ${PKG} from HEAD and ${UPSTREAM_BRANCH}.\n"
     git merge --no-commit ${UPSTREAM_BRANCH}
     # We set the author of the Debian Changelog, only for snapshot builds (this doesn't seem to be used by gbp dch :(
     export DEBEMAIL="perfSONAR developers <debian@perfsonar.net>"
@@ -86,7 +86,7 @@ if [ -z $DEBIAN_TAG ]; then
     # The new version must be below the final (without timestamp), hence using the ~
     new_version=${current_version}~${timestamp}
     dch -b --distribution=UNRELEASED --newversion=${new_version} -- 'SNAPSHOT autobuild for '${current_version}' via Jenkins'
-    GBP_OPTS="$GBP_OPTS --git-upstream-tree=branch --git-upstream-branch=${DEBIAN_BRANCH}"
+    GBP_OPTS="$GBP_OPTS --git-upstream-tree=treeish --git-upstream-branch=HEAD"
     dpkgsign="-k8968F5F6"
 else
     # If we have a tag, we take the source from the git tag
