@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # This script builds a perfSONAR Debian source package from a git repository checkout.
 # It uses git-buildpackage and its configuration for the package in debian/gbp.conf
 # It is made to work with Jenkins, for that purpose the git repository need to be checked out
@@ -18,14 +18,11 @@ BASE_DIR=$(pwd)
 MY_DIR=$(dirname "$0")
 echo $MY_DIR
 
-# Trick to enable the Git parameter plugin to work with the source directory where we checked out
-# the source code. Otherwise, the Git parameter plugin cannot find the tags existing in the repository
-# This is a bug in the git-parameter plugin, see https://issues.jenkins-ci.org/browse/JENKINS-27726
-ln -s ${SRC_DIR}/.git* .
+# Go into the directory where we checked out source
 cd ${SRC_DIR}
 
 # Kludge detection, this need to be done in the correct branch!
-# This means that the Jenkins job must have "*/${branch}" as the Branch to be build.
+# This means that the Jenkins job must be configured to checkout the exact branch that we will be building
 if [ ! -f debian/gbp.conf ]; then
     # No debian directory, we're probably building pscheduler or a minor-package
     if [ -d "${package}" ]; then
@@ -42,30 +39,15 @@ if [ ! -f debian/gbp.conf ]; then
         package_dir=$package
         package=`awk 'NR==1 {print $1}' debian/changelog`
     else
-        echo
-        echo "I don't recognise what you want me to build, pscheduler/minor-packages builds need to have the env variable 'package' set."
-        echo "package=${package} and I don't see a directory with this name.  I stop."
-        echo
+        echo -e "\nI don't recognise what you want me to build, pscheduler/minor-packages builds need to have the env variable 'package' set."
+        echo -e "package=${package} and I don't see a directory with this name.  I stop.\n"
         exit 1
     fi
 fi
 
 # Check the tag parameter, it has precedence over the branch parameter
 DEBIAN_TAG=$tag
-if [ -z $DEBIAN_TAG ]; then
-    # If we don't have a tag parameter, let's look at the branch parameter
-    if [ "${branch}" = "-" ]; then
-        # No tag and no branch parameter, we look which branch we're building from
-        DEBIAN_BRANCH=`awk -F '=' '/debian-branch/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2}' debian/gbp.conf`
-    else
-        DEBIAN_BRANCH=$branch
-    fi
-    export GIT_BRANCH=DEBIAN_BRANCH
-    git checkout ${DEBIAN_BRANCH}
-else
-    # If we have a tag we check it out
-    git checkout ${DEBIAN_TAG}
-fi
+[ -n $DEBIAN_TAG ] && git checkout ${DEBIAN_TAG}
 
 # We don't want to package any submodule
 git submodule deinit -f .
@@ -90,7 +72,7 @@ esac
 # We differentiate snapshot and release builds
 if [ -z $DEBIAN_TAG ]; then
     # If we don't have a tag, we take the source from the debian/branch and merge upstream in it so we have the latest changes
-    echo "\nBuilding snapshot package of ${PKG} from ${DEBIAN_BRANCH} and ${UPSTREAM_BRANCH}.\n"
+    echo -e "\nBuilding snapshot package of ${PKG} from ${DEBIAN_BRANCH} and ${UPSTREAM_BRANCH}.\n"
     git merge --no-commit ${UPSTREAM_BRANCH}
     # We set the author of the Debian Changelog, only for snapshot builds (this doesn't seem to be used by gbp dch :(
     export DEBEMAIL="perfSONAR developers <debian@perfsonar.net>"
@@ -104,7 +86,7 @@ if [ -z $DEBIAN_TAG ]; then
     dpkgsign="-k8968F5F6"
 else
     # If we have a tag, we take the source from the git tag
-    echo "\nBuilding release package of ${PKG} from ${DEBIAN_TAG}.\n"
+    echo -e "\nBuilding release package of ${PKG} from ${DEBIAN_TAG}.\n"
     # We build the upstream tag from the Debian tag by, see https://github.com/perfsonar/project/wiki/Versioning :
     # - removing the leading debian/distro prefix
     # - removing the ending -1 debian-version field
@@ -180,7 +162,7 @@ if [ "$pscheduler_dir_level" ]; then
     mv ${package}_* ${BASE_DIR}
     cd ${BASE_DIR}/${SRC_DIR}
 fi
-echo "\nPackage source for ${PKG} is built.\n"
+echo -e "\nPackage source for ${PKG} is built.\n"
 
 # Run Lintian on built package
 cd ..
