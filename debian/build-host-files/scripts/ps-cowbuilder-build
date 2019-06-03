@@ -87,8 +87,6 @@ if $git_update ; then
     rm -rf ${REPO}
     git clone -b ${branch} ${REPO_LOC}${REPO} ${REPO}/${SRC_DIR}
     cd ${REPO}/${SRC_DIR}
-    # We update all submodules to have the current building script
-    git submodule update --init --recursive --remote
 elif [ -d ${REPO}/${SRC_DIR} ]; then
     echo "I'm using the existing ${REPO} directory."
     cd ${REPO}/${SRC_DIR}/..
@@ -100,7 +98,6 @@ elif [ -d ${REPO}/${SRC_DIR} ]; then
     mv ../.git .
     git checkout -B ${branch}
     git checkout -- *
-    git submodule update --init --recursive
 else
     echo "You asked me to reuse the existing ${REPO} directory but it doesn't seem right."
     exit 1

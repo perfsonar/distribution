@@ -45,8 +45,9 @@ if [ ! -f debian/gbp.conf ]; then
     fi
 fi
 
-# Get the current branch, before making any change
+# Get the current branch and commit, before making any change
 CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+CURRENT_COMMIT=`git rev-parse --short HEAD`
 
 # Check the tag parameter, it has precedence over the branch parameter
 DEBIAN_TAG=$tag
@@ -59,6 +60,7 @@ git submodule deinit -f .
 UPSTREAM_BRANCH=`awk -F '=' '/upstream-branch/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2}' debian/gbp.conf`
 PKG=`awk 'NR==1 {print $1}' debian/changelog`
 git branch ${UPSTREAM_BRANCH} origin/${UPSTREAM_BRANCH}
+UPSTREAM_COMMIT=`git rev-parse --short -b ${UPSTREAM_BRANCH}`
 
 # Our default gbp options
 GBP_OPTS="-nc --git-force-create --git-ignore-new --git-ignore-branch -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true --git-export-dir="
@@ -75,8 +77,7 @@ esac
 # We differentiate snapshot and release builds
 if [ -z $DEBIAN_TAG ]; then
     # If we don't have a tag, we take the source from the current branch and merge upstream in it so we have the latest changes
-    DEBIAN_BRANCH=$CURRENT_BRANCH
-    echo -e "\nBuilding snapshot package of ${PKG} from HEAD and ${UPSTREAM_BRANCH}.\n"
+    echo -e "\nBuilding snapshot package of ${PKG} from ${CURRENT_BRANCH} (${CURRENT_COMMIT}) merged with ${UPSTREAM_BRANCH} (${UPSTREAM_COMMIT}).\n"
     git merge --no-commit ${UPSTREAM_BRANCH}
     # We set the author of the Debian Changelog, only for snapshot builds (this doesn't seem to be used by gbp dch :(
     export DEBEMAIL="perfSONAR developers <debian@perfsonar.net>"
