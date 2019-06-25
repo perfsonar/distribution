@@ -38,7 +38,7 @@ else
     echo "No specfile found for $pkg at $pkg/$pkg.spec"
     exit 1
 fi
-RPM_VERSION=`awk '/^Version:/ {print $2}' $specfile`
+RPM_VERSION=`awk '/^%define perfsonar_auto_version / {print $3}' $specfile`
 
 # Getting DEB version number
 if [ -f $pkg/debian/changelog ]; then
