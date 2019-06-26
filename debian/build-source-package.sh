@@ -128,7 +128,7 @@ if [ "$pscheduler_dir_level" ]; then
             ! [ -e ../${package}_${upstream_version}.orig.tar.xz ] &&
             ! [ -e ../${package}_${upstream_version}.orig.tar.bz2 ]; then
             if [ -z $DEBIAN_TAG ]; then
-                git archive -o ../${package}_${upstream_version}.orig.tar.gz ${UPSTREAM_BRANCH}
+                git archive -o ../${package}_${upstream_version}.orig.tar.gz ${CURRENT_BRANCH}
             else
                 if git tag -l | grep "^${UPSTREAM_TAG}$" ; then
                     git archive -o ../${package}_${upstream_version}.orig.tar.gz ${UPSTREAM_TAG}
