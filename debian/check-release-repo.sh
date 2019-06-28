@@ -23,6 +23,10 @@ fi
 
 # Then $RELEASE from changelog
 `tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/\(.*\) (\([0-9.]*\).*) \([A-Za-z-]*\);.*/export PACKAGE_NAME=\1 VERSION=\2 RELEASE=\3/'`
+if [[ "$PACKAGE_NAME" == "iperf3" ]]; then
+    # Special case
+    export RELEASE=perfsonar-minor-snapshot
+fi
 if [[ "$RELEASE" == "UNRELEASED" ]]; then
     if [[ "0" == "${BRANCH##*.}" ]]; then
         # If the last digit of the branch number is 0, we are on a minor release
