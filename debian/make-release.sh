@@ -23,7 +23,6 @@ show_help() {
     You can call this script with the following args:
         -a: add modified files to the commit (use \`git commit -a\`)
         -c: additional git options to be passed to \`git commit\`
-        -d: don't update distribution submodule
         -g: don't do any git action (no commit, no tag)
         -m: releases a minor package
         -n: performs a dry-run
@@ -51,14 +50,12 @@ dry_run=0
 no_git=0
 minor_pkg=0
 quilt_refresh=1
-update_distribution=1
 
 # Parsing options
 while getopts "ac:dgmnt:v" OPT; do
     case $OPT in
         a) commit_a="-a" ;;
         c) commit_options=$OPTARG ;;
-        d) update_distribution=0 ;;
         g) no_git=1 ;;
         m) minor_pkg=1 ;;
         n) dry_run=1 ;;
@@ -171,9 +168,6 @@ if [[ $dry_run -eq 1 ]]; then
     if [[ $quilt_refresh -eq 1 && -d debian/patches ]]; then
         verbose "We will try to refresh quilt patches to latest merge."
     fi
-    if [[ $update_distribution -eq 1 ]]; then
-        verbose "We will update the distribution submodule to latest commit on master."
-    fi
     v=1
     verbose "\033[1mThis is a dry run, I haven't touch a thing.\033[0m"
     exit
@@ -187,26 +181,6 @@ if [[ $quilt_refresh -eq 1 && -s debian/patches/series ]]; then
     quilt --quiltrc - push -aq --refresh > /dev/null
     quilt pop -aq > /dev/null
     git add debian/patches
-fi
-
-if [[ $update_distribution -eq 1 ]]; then
-    # Update the distribution submodule to latest master commit
-    verbose "Updating the distribution submodule to latest commit on master."
-    if [ "${minor_pkg}" -eq 1 ]; then
-        cd ..
-    fi
-    cd distribution
-    git checkout -q master
-    if [[ $v -eq 0 ]]; then
-        git pull -q
-    else
-        git pull
-    fi
-    cd ..
-    git add distribution
-    if [ "${minor_pkg}" -eq 1 ]; then
-        cd ${PKG}
-    fi
 fi
 
 # Actually change the debian/changelog file
