@@ -16,7 +16,6 @@ SRC_DIR='source'
 GIT_BUILDING_REPO='distribution'
 BASE_DIR=$(pwd)
 MY_DIR=$(dirname "$0")
-echo $MY_DIR
 
 # Go into the directory where we checked out source
 cd ${SRC_DIR}
