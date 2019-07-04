@@ -140,7 +140,13 @@ else
     else
         verbose "We have an alpha, beta or candidate release: $PKG_VERSION (native package)."
     fi
-    REL="staging"
+    # Depending on last digit in branch name, we are in minor or patch
+    # TODO: will not work with multiple simulatneous releases
+    if [[ "0" == "${BRANCH##*.}" ]]; then
+        REL="minor-staging"
+    else
+        REL="patch-staging"
+    fi
 fi
 PS_DEB_REP="perfsonar-${REL}"
 # We can have UNRELEASED as distro (we will change it later on), or it must be the correct $PS_DEB_REP
