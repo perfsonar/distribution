@@ -92,12 +92,14 @@ else
     # If we have a tag, we take the source from the git tag
     echo -e "\nBuilding release package of ${PKG} from ${DEBIAN_TAG}.\n"
     # We build the upstream tag from the Debian tag by, see https://github.com/perfsonar/project/wiki/Versioning :
+    # - adding a leading "v"
     # - removing the leading debian/distro prefix
     # - removing the ending -1 debian-version field
-    # TODO: We should build the UPSTREAM_TAG from the format defined in gbp.conf
-    UPSTREAM_TAG=${DEBIAN_TAG##*\/}
+    # - transforming any ~x.b1 beta relnum to -x.b1
+    UPSTREAM_TAG=v${DEBIAN_TAG##*\/}
     UPSTREAM_TAG=${UPSTREAM_TAG%-*}
-    GBP_OPTS="$GBP_OPTS --git-upstream-tree=tag"
+    UPSTREAM_TAG=${UPSTREAM_TAG/~/-}
+    GBP_OPTS="$GBP_OPTS --git-upstream-tree=$UPSTREAM_TAG"
     # We don't sign the release package as we don't have the packager's key
     dpkgsign="-us -uc"
 fi
