@@ -12,7 +12,7 @@ show_help() {
     Arguments understood:
         -a: architecture(s) to build the package for (defaults to amd64)
             multiple architectures can be given like "amd64 ppc64el"
-        -b: git debian branch to build from
+        -b: git debian branch to build from (default to master)
             (upstream is read from gbp.conf)
         -k: keep locally built packages (can be useful to solve dependencies)
         -s: build only the source package
@@ -31,7 +31,7 @@ SRC_DIR='source'
 
 # Default values
 ARCHES='amd64'
-unset branch
+branch='master'
 unset tag
 unset source_only
 git_update=true
@@ -57,41 +57,43 @@ shift $((OPTIND-1))
 if [ $# -gt 0 ]; then
     REPO=$1
 fi
-if [ -z $REPO ]; then
+if [ -z "$REPO" ]; then
     show_help >&2
     exit 1
 fi
 
 # Do we have a tag?
-if [ -z $tag ]; then
+if [ -z "$tag" ]; then
     # We don't have a tag, we build a snapshot from $branch
     export branch
-    DIST=${branch##*\/}
+    DIST="${branch##*\/}"
 else
     # We have a tag, say we will build from it
-    tagl=${tag#*\/}
-    DIST=${tagl%%\/*}
+    tagl="${tag#*\/}"
+    DIST="${tagl%%\/*}"
     export tag
 fi
 
 # Do we want to clone the repo or do we have it already existing?
 if $git_update ; then
     # Checkout source from local dev repo and merge upstream branch into ${DEBIAN_BRANCH}
-    rm -rf ${REPO}
-    git clone ${REPO_LOC}${REPO} ${REPO}/${SRC_DIR}
-    cd ${REPO}/${SRC_DIR}
-    branch=`git branch --contains tags/${tag} | awk '{print $2}'`
-    git checkout $branch
-elif [[ -d ${REPO}/${SRC_DIR} && ${branch} ]]; then
+    rm -rf "${REPO}"
+    git clone "${REPO_LOC}${REPO}" "${REPO}/${SRC_DIR}"
+    cd "${REPO}/${SRC_DIR}"
+    if [ -n "$tag" ] ; then
+        branch=`git branch --contains "tags/${tag}" | awk '{print $2}'`
+    fi
+    git checkout "$branch"
+elif [[ -d "${REPO}/${SRC_DIR}" && ${branch} ]]; then
     echo "I'm using the existing ${REPO} directory."
-    cd ${REPO}/${SRC_DIR}/..
+    cd "${REPO}/${SRC_DIR}/.."
     rm -f .git
-    mv ${SRC_DIR}/.git .
+    mv "${SRC_DIR}/.git" .
     rm -rf *
-    mkdir -p ${SRC_DIR}
-    cd ${SRC_DIR}
+    mkdir -p "${SRC_DIR}"
+    cd "${SRC_DIR}"
     mv ../.git .
-    git checkout -B ${branch}
+    git checkout -B "${branch}"
     git checkout -- *
 else
     echo "You asked me to reuse the existing ${REPO} directory but it doesn't seem right."
