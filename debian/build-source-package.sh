@@ -20,6 +20,8 @@ MY_DIR=$(dirname "$0")
 # Go into the directory where we checked out source
 cd ${SRC_DIR}
 
+ls -la
+set -x
 # Kludge detection, this need to be done in the correct branch!
 # This means that the Jenkins job must be configured to checkout the exact branch that we will be building
 if [ ! -f debian/gbp.conf ]; then
