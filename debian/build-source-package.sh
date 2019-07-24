@@ -20,8 +20,6 @@ MY_DIR=$(dirname "$0")
 # Go into the directory where we checked out source
 cd ${SRC_DIR}
 
-ls -la
-set -x
 # Kludge detection, this need to be done in the correct branch!
 # This means that the Jenkins job must be configured to checkout the exact branch that we will be building
 if [ ! -f debian/gbp.conf ]; then
@@ -42,6 +40,7 @@ if [ ! -f debian/gbp.conf ]; then
     else
         echo -e "\nI don't recognise what you want me to build, pscheduler/minor-packages builds need to have the env variable 'package' set."
         echo -e "package=${package} and I don't see a directory with this name.  I stop.\n"
+        ls -al
         exit 1
     fi
 fi
