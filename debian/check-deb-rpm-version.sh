@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Script to check that the version of Debian packages is the same as the RPM version.
 # Versions in .spec file and in the debian/changelog files are compared.
+# This is used only for pscheduler repository packages
 
 # Parameter is the name of the package to check
 if [ $# -ne 1 ]; then
@@ -16,29 +17,33 @@ if [ ! -d $pkg ]; then
     exit 1
 fi
 
-# Special packages
+# Getting RPM version number
 case ${pkg} in
     pscheduler-rpm)
         echo "$pkg doesn't exist here for Debian, we won't check its version."
         exit
         ;;
 
-    drop-in|jq|python-detach|python2-jsonschema|python-psycopg2|python2-pyrsistent)
-        echo "$pkg doesn't exist here for CentOS, we won't check its version."
+    python-psycopg2)
+        echo "$pkg doesn't exist here for RPM, we won't check its version."
         exit
         ;;
-esac
 
-# Getting RPM version number
-if [ -f $pkg/$pkg.spec ]; then
-    specfile=$pkg/$pkg.spec
-elif [ -f $pkg/$pkg.spec-top ]; then
-    specfile=$pkg/$pkg.spec-top
-else
-    echo "No specfile found for $pkg at $pkg/$pkg.spec"
-    exit 1
-fi
-RPM_VERSION=`awk '/^%define perfsonar_auto_version / {print $3}' $specfile`
+    drop-in|jq|python-icmperror|python-jsontemplate|python2-jsonschema|python2-pyrsistent)
+        RPM_VERSION=`awk '/^Version:/ {print $2}' $pkg/$pkg.spec`
+        ;;
+
+    *)
+        if [ -f $pkg/$pkg.spec ]; then
+            specfile=$pkg/$pkg.spec
+        elif [ -f $pkg/$pkg.spec-top ]; then
+            specfile=$pkg/$pkg.spec-top
+        else
+            echo "No specfile found for $pkg at $pkg/$pkg.spec"
+            exit 1
+        fi
+        RPM_VERSION=`awk '/^%define perfsonar_auto_version / {print $3}' $specfile`
+esac
 
 # Getting DEB version number
 if [ -f $pkg/debian/changelog ]; then
