@@ -85,7 +85,7 @@ if [ -z $DEBIAN_TAG ]; then
     timestamp=`date +%Y%m%d%H%M%S`
     current_version=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)$/\1/p'`
     # The new version must be below the final (without timestamp), hence using the ~
-    new_version=${current_version}~${timestamp}
+    new_version=${current_version%-*}~${timestamp}-${current_version##*-}
     dch -b --distribution=UNRELEASED --newversion=${new_version} -- 'SNAPSHOT autobuild for '${current_version}' via Jenkins'
     GBP_OPTS="$GBP_OPTS --git-upstream-tree=HEAD"
     dpkgsign="-k8968F5F6"
