@@ -19,8 +19,7 @@ fi
 
 # Check if repo exist, should be ok from check-release-repo.sh but we never know…
 echo -n "I'll build binary packages in ${DIST}-$architecture "
-reprepro -b /srv/repository check ${RELEASE} 2>/dev/null
-if [ $? -ne 0 ]; then
+if ! grep -qE "^Codename: ${RELEASE}" /srv/repository/conf/distributions ; then
     echo "but"
     echo "${RELEASE} repository doesn't seem to exist in /srv/repository"
     echo "I'll stop here."
