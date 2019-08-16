@@ -16,7 +16,7 @@ vagrant ssh
 exit
 ```
 
-The resulting packages will be in a /results/ directory at the same level as
+The resulting packages will be in a /result/ directory at the same level as
 the git repository you're building.
 
 ## Vagrant VM

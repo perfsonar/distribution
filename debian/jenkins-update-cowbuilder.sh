@@ -15,9 +15,16 @@ fi
 echo
 echo "Updating cowbuilder environments for ${DISTRO} on ${architecture}"
 echo
+
+# We also take care of cleanup the result directory
+find /var/cache/pbuilder/result/ -atime +30 -exec rm {} \;
+
+# Looking at stretch images
 touch ~/cowbuilder-base-stretch-${architecture}-${DISTRO}-update.lock
 sudo -E DIST=stretch cowbuilder --update --basepath /var/cache/pbuilder/base-stretch-${architecture}-${DISTRO}.cow
 rm ~/cowbuilder-base-stretch-${architecture}-${DISTRO}-update.lock
+
+# Looking at jessie images
 if [[ $architecture =~ (arm64|ppc64el) ]]; then
     echo "There is no more support for $architecture port for Jessie LTS"
 else

@@ -107,7 +107,6 @@ else
     dpkgsign="-us -uc"
 fi
 
-set -x
 # We package the upstream sources (tarball) from git
 if [ "$pscheduler_dir_level" ]; then
     # Directly calling git archive if pscheduler, because we have multiple packages inside a single repo
