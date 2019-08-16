@@ -107,6 +107,7 @@ else
     dpkgsign="-us -uc"
 fi
 
+set -x
 # We package the upstream sources (tarball) from git
 if [ "$pscheduler_dir_level" ]; then
     # Directly calling git archive if pscheduler, because we have multiple packages inside a single repo
@@ -146,7 +147,7 @@ if [ "$pscheduler_dir_level" ]; then
         fi
     fi
     # Removing the pscheduler packages we're not building, to save disk space on build host
-    rm -r ${BASE_DIR}/${SRC_DIR}/!(${package_dir})
+    rm -r ${BASE_DIR}/${SRC_DIR}/!(${package_dir}*)
     rm -r ${BASE_DIR}/${SRC_DIR}/.git
 else
     # Or calling gbp for the other packages
