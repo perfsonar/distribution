@@ -20,6 +20,8 @@ MY_DIR=$(dirname "$0")
 # Go into the directory where we checked out source
 cd ${SRC_DIR}
 
+# extglob is needed to cleanup pscheduler repo and save disk space
+shopt -s extglob
 # Kludge detection, this need to be done in the correct branch!
 # This means that the Jenkins job must be configured to checkout the exact branch that we will be building
 if [ ! -f debian/gbp.conf ]; then
@@ -143,6 +145,9 @@ if [ "$pscheduler_dir_level" ]; then
             fi
         fi
     fi
+    # Removing the pscheduler packages we're not building, to save disk space on build host
+    rm -r ${BASE_DIR}/${SRC_DIR}/!(${package_dir})
+    rm -r ${BASE_DIR}/${SRC_DIR}/.git
 else
     # Or calling gbp for the other packages
     gbp buildpackage $GBP_OPTS
