@@ -35,7 +35,7 @@ rsync -av --delete /srv/repository/ jenkins@ps-deb-repo.qalab.geant.net:/var/www
 ssh jenkins@ps-deb-repo.qalab.geant.net "~/deb-repo-info.pl -repo /var/www/html/repo-from-jenkins -html > /var/www/html/repo-from-jenkins/index.html"
 echo
 echo "Copy new packages into the final public repository (snapshot and staging only) and update the description page"
-OUT=`ssh jenkins@ps-deb-repo.qalab.geant.net "reprepro -b /var/www/html/debian update perfsonar-patch-snapshot perfsonar-patch-staging perfsonar-minor-snapshot perfsonar-minor-staging" 2>&1`
+OUT=`ssh jenkins@ps-deb-repo.qalab.geant.net "reprepro --waitforlock 12 -b /var/www/html/debian update perfsonar-patch-snapshot perfsonar-patch-staging perfsonar-minor-snapshot perfsonar-minor-staging" 2>&1`
 if [ ! $? -eq 0 ]; then
     echo
     echo "$OUT"
