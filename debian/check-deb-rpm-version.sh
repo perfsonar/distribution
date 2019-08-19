@@ -29,7 +29,7 @@ case ${pkg} in
         exit
         ;;
 
-    drop-in|jq|python-icmperror|python-jsontemplate|python2-jsonschema|python2-pyrsistent)
+    drop-in|jq|python-icmperror|python-jsontemplate|python-pyjq|python2-jsonschema|python2-pyrsistent)
         RPM_VERSION=`awk '/^Version:/ {print $2}' $pkg/$pkg.spec`
         ;;
 
