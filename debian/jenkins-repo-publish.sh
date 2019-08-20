@@ -15,7 +15,7 @@ echo "Local repositories are in /srv/repository here is their current content"
 ls -la /srv/repository
 ls -la /srv/repository/dists
 
-for DIST in minor patch; do
+for DIST in 4.1 4.2 4.3; do
     for RELEASE in staging snapshot; do
         echo
         # Check the current content of the repository
@@ -35,7 +35,7 @@ rsync -av --delete /srv/repository/ jenkins@ps-deb-repo.qalab.geant.net:/var/www
 ssh jenkins@ps-deb-repo.qalab.geant.net "~/deb-repo-info.pl -repo /var/www/html/repo-from-jenkins -html > /var/www/html/repo-from-jenkins/index.html"
 echo
 echo "Copy new packages into the final public repository (snapshot and staging only) and update the description page"
-OUT=`ssh jenkins@ps-deb-repo.qalab.geant.net "reprepro --waitforlock 12 -b /var/www/html/debian update perfsonar-patch-snapshot perfsonar-patch-staging perfsonar-minor-snapshot perfsonar-minor-staging" 2>&1`
+OUT=`ssh jenkins@ps-deb-repo.qalab.geant.net "reprepro --waitforlock 12 -b /var/www/html/debian update perfsonar-4.1-snapshot perfsonar-4.1-staging perfsonar-4.2-snapshot perfsonar-4.2-staging perfsonar-4.3-snapshot perfsonar-4.3-staging" 2>&1`
 if [ ! $? -eq 0 ]; then
     echo
     echo "$OUT"
@@ -51,7 +51,7 @@ for p in $PROP; do
 done
 ssh jenkins@ps-deb-repo.qalab.geant.net "~/deb-repo-info.pl -repo /var/www/html/debian -html > /var/www/html/debian/index.html"
 
-# testing instance, should be removed when moving into production
+# GÉANT repoo testing instance, should be removed when moving into production
 #for server in test
 #for server in test uat
 #    do

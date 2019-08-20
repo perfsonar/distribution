@@ -25,30 +25,18 @@ fi
 `tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/\(.*\) (\([0-9.]*\).*) \([A-Za-z-]*\);.*/export PACKAGE_NAME=\1 VERSION=\2 RELEASE=\3/'`
 if [[ "$PACKAGE_NAME" == "iperf3" && "$RELEASE" == "UNRELEASED" ]]; then
     # Special case
-    export RELEASE=perfsonar-minor-snapshot
+    export RELEASE=perfsonar-4.2-snapshot
 fi
 if [[ "$RELEASE" == "UNRELEASED" ]]; then
-    if [[ "0" == "${BRANCH##*.}" ]]; then
-        # If the last digit of the branch number is 0, we are on a minor release
-        export RELEASE=perfsonar-minor-snapshot
-    else
-        # otherwise we are on a patch release
-        export RELEASE=perfsonar-patch-snapshot
-    fi
+    export RELEASE=perfsonar-${VERSION%.*}-snapshot
 fi
 if [[ "$RELEASE" == "perfsonar-release" ]]; then
-    if [[ "0" == "${BRANCH##*.}" ]]; then
-        # If the last digit of the branch number is 0, we are on a minor release
-        export RELEASE=perfsonar-minor-staging
-    else
-        # otherwise we are on a patch release
-        export RELEASE=perfsonar-patch-staging
-    fi
+    export RELEASE=perfsonar-${VERSION%.*}-staging
 fi
 if [[ "$RELEASE" == "perfsonar-jessie-staging" ]]; then
-    export RELEASE=perfsonar-patch-staging
+    export RELEASE=perfsonar-4.1-staging
 fi
-if [[ ! $RELEASE =~ perfsonar-(minor|patch)-(staging|snapshot) ]]; then
+if [[ ! $RELEASE =~ perfsonar-(4.1|4.2|4.3)-(staging|snapshot) ]]; then
     echo "I don't know any perfSONAR repository called $RELEASE."
     echo "I cannot work on that package."
     exit 1
