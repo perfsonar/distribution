@@ -132,7 +132,7 @@ if [ "$pscheduler_dir_level" ]; then
             cd */debian/..
         fi
         # We remove the -pkgrel suffix
-        upstream_version=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)-[^-]*$/\1/p'`
+        upstream_version=`dpkg-parsechangelog | sed -n 's/Version: \([^~-]*\).*$/\1/p'`
         if ! [ -e ../${package}_${upstream_version}.orig.tar.gz ] &&
             ! [ -e ../${package}_${upstream_version}.orig.tar.xz ] &&
             ! [ -e ../${package}_${upstream_version}.orig.tar.bz2 ]; then
