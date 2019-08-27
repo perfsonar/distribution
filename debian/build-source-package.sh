@@ -137,7 +137,16 @@ if [ "$pscheduler_dir_level" ]; then
             ! [ -e ../${package}_${upstream_version}.orig.tar.xz ] &&
             ! [ -e ../${package}_${upstream_version}.orig.tar.bz2 ]; then
             if [ -z $DEBIAN_TAG ]; then
-                git archive -o ../${package}_${upstream_version}.orig.tar.gz ${CURRENT_BRANCH}
+                if [[ ${upstream_version} != $UPSTREAM_BRANCH ]]; then
+                    # We have a minor package and it's orig tarball in the repository
+                    for suffix in gz xz bz2; do
+                        if [ -f ../${package}_*.orig.tar.${suffix} ]; then
+                            ln ../${package}_*.orig.tar.${suffix} ../${package}_${upstream_version}.orig.tar.${suffix}
+                        fi
+                    done
+                else
+                    git archive -o ../${package}_${upstream_version}.orig.tar.gz ${CURRENT_BRANCH}
+                fi
             else
                 if git tag -l | grep "^${UPSTREAM_TAG}$" ; then
                     git archive -o ../${package}_${upstream_version}.orig.tar.gz ${UPSTREAM_TAG}

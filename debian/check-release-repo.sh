@@ -28,10 +28,10 @@ if [[ "$PACKAGE_NAME" == "iperf3" && "$RELEASE" == "UNRELEASED" ]]; then
     export RELEASE=perfsonar-4.2-snapshot
 fi
 if [[ "$RELEASE" == "UNRELEASED" ]]; then
-    export RELEASE=perfsonar-${VERSION%.*}-snapshot
+    export RELEASE=perfsonar-${BRANCH%.*}-snapshot
 fi
 if [[ "$RELEASE" == "perfsonar-release" ]]; then
-    export RELEASE=perfsonar-${VERSION%.*}-staging
+    export RELEASE=perfsonar-${BRANCH%.*}-staging
 fi
 if [[ "$RELEASE" == "perfsonar-jessie-staging" ]]; then
     export RELEASE=perfsonar-4.1-staging
