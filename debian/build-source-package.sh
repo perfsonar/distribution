@@ -80,7 +80,7 @@ esac
 if [ -z $DEBIAN_TAG ]; then
     # If we don't have a tag, we take the source from the current branch and merge upstream in it so we have the latest changes
     echo -e "\nBuilding snapshot package of ${PKG} from ${CURRENT_BRANCH} (${CURRENT_COMMIT}) merged with ${UPSTREAM_BRANCH} (${UPSTREAM_COMMIT}).\n"
-    git merge --no-commit ${UPSTREAM_BRANCH}
+    git merge -m "Merging upstream ${UPSTREAM_BRANCH}" ${UPSTREAM_BRANCH}
     # We set the author of the Debian Changelog, only for snapshot builds (this doesn't seem to be used by gbp dch :(
     export DEBEMAIL="perfSONAR developers <debian@perfsonar.net>"
     # And we generate the changelog ourselves, with a version number suitable for an upstream snapshot
@@ -146,7 +146,7 @@ if [ "$pscheduler_dir_level" ]; then
                         fi
                     done
                 else
-                    git archive -o ../${package}_${upstream_version}.orig.tar.gz ${CURRENT_BRANCH}
+                    git archive -o ../${package}_${upstream_version}.orig.tar.gz HEAD
                 fi
             else
                 if git tag -l | grep "^${UPSTREAM_TAG}$" ; then
