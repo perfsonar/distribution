@@ -22,7 +22,7 @@ elif [[ $DIST != wheezy && $DIST != jessie && $DIST != stretch ]]; then
 fi
 
 # Then $RELEASE from changelog
-`tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/\(.*\) (\([0-9.]*\).*) \([A-Za-z-]*\);.*/export PACKAGE_NAME=\1 VERSION=\2 RELEASE=\3/'`
+`tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/\(.*\) (\([0-9.]*\).*) \([A-Za-z0-9.-]*\);.*/export PACKAGE_NAME=\1 VERSION=\2 RELEASE=\3/'`
 if [[ "$PACKAGE_NAME" == "iperf3" && "$RELEASE" == "UNRELEASED" ]]; then
     # Special case
     export RELEASE=perfsonar-4.2-snapshot
@@ -36,7 +36,11 @@ fi
 if [[ "$RELEASE" == "perfsonar-jessie-staging" ]]; then
     export RELEASE=perfsonar-4.1-staging
 fi
-if [[ ! $RELEASE =~ perfsonar-(4.1|4.2|4.3)-(staging|snapshot) ]]; then
+set -x
+if [[ $RELEASE =~ perfsonar-(4.1|4.2|4.3) ]]; then
+    export RELEASE=$RELEASE-staging
+fi
+if [[ ! $RELEASE =~ perfsonar-(4.1|4.2|4.3)-(staging|-snapshot) ]]; then
     echo "I don't know any perfSONAR repository called $RELEASE."
     echo "I cannot work on that package."
     exit 1
