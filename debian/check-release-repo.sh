@@ -36,9 +36,8 @@ fi
 if [[ "$RELEASE" == "perfsonar-jessie-staging" ]]; then
     export RELEASE=perfsonar-4.1-staging
 fi
-set -x
 if [[ $RELEASE =~ perfsonar-(4.1|4.2|4.3) ]]; then
-    export RELEASE=$RELEASE-staging
+    export RELEASE=perfsonar-${BASH_REMATCH[1]}-staging
 fi
 if [[ ! $RELEASE =~ perfsonar-(4.1|4.2|4.3)-(staging|-snapshot) ]]; then
     echo "I don't know any perfSONAR repository called $RELEASE."
