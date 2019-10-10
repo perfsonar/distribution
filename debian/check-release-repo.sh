@@ -26,20 +26,17 @@ fi
 if [[ "$PACKAGE_NAME" == "iperf3" && "$RELEASE" == "UNRELEASED" ]]; then
     # Special case
     export RELEASE=perfsonar-4.2-snapshot
-fi
-if [[ "$RELEASE" == "UNRELEASED" ]]; then
+elif [[ "$RELEASE" == "UNRELEASED" ]]; then
     export RELEASE=perfsonar-${BRANCH%.*}-snapshot
-fi
-if [[ "$RELEASE" == "perfsonar-release" ]]; then
+elif [[ "$RELEASE" == "perfsonar-release" ]]; then
     export RELEASE=perfsonar-${BRANCH%.*}-staging
-fi
-if [[ "$RELEASE" == "perfsonar-jessie-staging" ]]; then
+elif [[ "$RELEASE" == "perfsonar-jessie-staging" ]]; then
     export RELEASE=perfsonar-4.1-staging
-fi
-if [[ $RELEASE =~ perfsonar-(4.1|4.2|4.3) ]]; then
+elif [[ $RELEASE =~ perfsonar-(4.1|4.2|4.3)-(staging|-snapshot) ]]; then
+    continue
+elif [[ $RELEASE =~ ^perfsonar-(4.1|4.2|4.3)$ ]]; then
     export RELEASE=perfsonar-${BASH_REMATCH[1]}-staging
-fi
-if [[ ! $RELEASE =~ perfsonar-(4.1|4.2|4.3)-(staging|-snapshot) ]]; then
+else
     echo "I don't know any perfSONAR repository called $RELEASE."
     echo "I cannot work on that package."
     exit 1
