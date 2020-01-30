@@ -137,12 +137,13 @@ if [ "$pscheduler_dir_level" ]; then
             ! [ -e ../${package}_${upstream_version}.orig.tar.xz ] &&
             ! [ -e ../${package}_${upstream_version}.orig.tar.bz2 ]; then
             if [ -z $DEBIAN_TAG ]; then
-                if [ -f ../${package}_*.orig.tar.* ]; then
+                file_upstream_version="${upstream_version%~*}"
+                if [ -f ../${package}_${file_upstream_version#*:}*.orig.tar.* ]; then
                     # We have a minor package and its orig tarball in the repository
                     for suffix in gz xz bz2; do
-                        if [ -f ../${package}_*.orig.tar.${suffix} ]; then
+                        if [ -f ../${package}_${file_upstream_version#*:}*.orig.tar.${suffix} ]; then
                             # We just must create a new one with the snapshot version number
-                            ln ../${package}_*.orig.tar.${suffix} ../${package}_${upstream_version}.orig.tar.${suffix}
+                            ln ../${package}_${file_upstream_version#*:}*.orig.tar.${suffix} ../${package}_${upstream_version#*:}.orig.tar.${suffix}
                         fi
                     done
                 else
