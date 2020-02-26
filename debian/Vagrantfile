@@ -1,5 +1,5 @@
 # -*- mode: ruby -*-
-# vi: set ft=ruby :
+# vi: set ft=ruby shiftwidth=4 :
 
 # A sane locale
 ENV["LC_ALL"] = "C"
@@ -46,7 +46,9 @@ Vagrant.configure("2") do |config|
             build.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
             host_pwd = ""
         else
+            build.vm.provision "shell", privileged: false, inline: <<-SHELL
             echo "I don't know which directory to share with the Vagrant host"
+            SHELL
             exit
         end
 
