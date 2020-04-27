@@ -20,6 +20,15 @@ show_help() {
             (upstream is read from gbp.conf)
         -u: don't checkout nor update the local git repository
             (useful for subsequent builds with no change to sources)
+
+    Some examples:
+    ./ps-cowbuilder-build -b 4.2.1 toolkit
+    ./ps-cowbuilder-build -t debian/stretch/4.2.1 toolkit
+    package=pscheduler-archiver-esmond ./ps-cowbuilder-build -b 4.3.0 pscheduler
+    for p in `ll pscheduler/source/ | awk '/pscheduler/ {print $9}' | grep -vE "pscheduler-(docs|rpm)" | sort -r`; do package=$p ./ps-cowbuilder-build -b 4.3.0 pscheduler; done
+
+    To rebuild everything in the local repo:
+    for p in jq python-icmperror python-jsonschema python-jsontemplate python-pyjq python-pyrsistent python-radix python-pscheduler `ls pscheduler/source | grep -E "^pscheduler" | grep -v "pscheduler-rpm"`; do package=$p ./ps-cowbuilder-build -b debian-python-3 pscheduler; done
 EOF
 }
 
@@ -157,6 +166,10 @@ if [ !$? ]; then
         echo ${deb##*/}
         cp -af ${deb} /vagrant/result/
     done
+    # And create a Packages file to serve as a local deb repo
+    echo -en "\nUpdating the APT local repository Packages content (in /vagrant/result)"
+    (cd /vagrant/result; apt-ftparchive packages . > Packages)
+    echo "."
 else
     echo -e "\n\033[1;33mSomething went wrong, package not built!\033[0m\n"
 fi

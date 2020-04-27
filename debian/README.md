@@ -19,6 +19,12 @@ exit
 The resulting packages will be in a /result/ directory at the same level as
 the git repository you're building.
 
+Don't mix building packages from different minor branches as all packages will end
+up in the same local repository. That means that solving dependencies using the local
+repo will get you the higher version available, disregarding the perfsonar repository
+it should belong too. It's better to empty the content of the /result/ directory
+whenever you change branches.
+
 ## Vagrant VM
 The Debian packages build process is using Vagrant to allow for easier builds.
 The Vagrantfile we provide is relying on a local VirtualBox host and is using
@@ -30,23 +36,16 @@ scripts are setting up the build environment.  Our full Debian build environemen
 is using a cowbuilder/pbuilder subsytem to isolate the builds in a dedicated and
 clean chroot.
 
-The machine is making use of 3 environment variables:
+The machine is making use of 2 environment variables:
 
 - `PS_DEB_ARCHES` list the architectures for which packages will be built, an empty
     list will build all the supported arches.
 - `PS_DEB_MIRROR` can contain the base URL of a Debian repository mirror you want
     to use (i.e. close to you), if not set the repository used will be the default
     one setup in the Debian box (which should be fine most of the time)
-- `http_proxy` can contain the base URL of an HTTP proxy to use when downloading
-    the packages.  This will be used in all the different installs (main machine and
-    cowbuilder chroot)
 
 If you want to change those variables, it is recommended to do so in your own local
 `~/.vagrant.d/Vagrantfile` (see https://www.vagrantup.com/docs/vagrantfile/#load-order-and-merging )
-
-Additionnaly, all files from the `build-host-files/apt.conf.d/` directory will be
-copied to the d9-build-ps VM so that you can make a dedicated APT setup if you need.
-That can be useful if you want to use a proxy for example.
 
 Running `vagrant provision` on a running machine will upgrade and keep the build
 environement up to date.  This is usually not needed as the `ps-cowbuilder-build`

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# This script will try to install a new perfSONAR package
+# And will use the perfsonar-snapshot repository to get dependencies
+
+# We need to have package full name
+if [ $1 ]; then
+    PKG=$1
+else
+    echo "We need a package name as first arg."
+    exit 1
+fi
+
+# And a repository type: minor or patch
+if [ $2 ]; then
+    REPO=$2
+else
+    echo "We need a repo name (patch or minor) as second arg."
+    exit 1
+fi
+
+# Check the package is existing locally
+if [ ! -f /vagrant/result/${PKG}_* ]; then
+    echo "I cannot see any $PKG in the local repo at /vagrant/result/"
+    exit 1
+fi
+
+# Add the perfSONAR snapshot repository
+cd /etc/apt/sources.list.d
+sudo rm -f perfsonar-minor-snapshot.list
+sudo rm -f perfsonar-patch-snapshot.list
+
+if [[ "$REPO" == "patch" ]]; then
+    sudo wget http://downloads.perfsonar.net/debian/perfsonar-patch-snapshot.list
+else
+    sudo wget http://downloads.perfsonar.net/debian/perfsonar-minor-snapshot.list
+fi
+
+# Refresh APT info
+sudo apt-get update
+
+# Try to do the install
+echo -e "I'm now going to try to install the latest version of \033[1;36m$PKG\033[0m solving dependencies with the \033[1;36m$REPO-snapshot\033[0m repository."
+sudo apt install $PKG
+

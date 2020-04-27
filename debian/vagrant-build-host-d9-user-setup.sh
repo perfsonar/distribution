@@ -11,11 +11,11 @@ host_repo_path=${host_pwd%/distribution/debian}
 export PS_SHARED_REPO=${SHARED_REPO_PREFIX}${host_repo_path}
 
 # Add useful pbuilder hooks
-sudo cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/pbuilder-hook.d/* /var/cache/pbuilder/hook.d/
+sudo cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/pbuilder-hook.d/* /var/cache/pbuilder/hook.d/
 
 # Adding pS building scripts
-cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/pbuilderrc /home/${USER}/.pbuilderrc
-cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/scripts/ps-cowbuilder-build /home/${USER}/
+cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/pbuilderrc /home/${USER}/.pbuilderrc
+cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/scripts/ps-cowbuilder-build /home/${USER}/
 chmod +x /home/${USER}/ps-cowbuilder-build
 
 # Make sure result directory in the Vagrant share is existing

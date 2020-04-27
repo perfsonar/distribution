@@ -2,7 +2,7 @@
 # pbuilder hook script: invoke shell if build fails.
 
 export HOME=/root
-apt-get install -y vim less bash
+apt-get install -y vim less bash lsof
 cat << EOF > ~/.vimrc
 set mouse-=a
 EOF

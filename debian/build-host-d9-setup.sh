@@ -10,15 +10,6 @@ host_repo_path=${host_pwd%/distribution/debian}
 export PS_SHARED_REPO=${SHARED_REPO_PREFIX}${host_repo_path}
 echo -e "\033[1;36mPreparing build environment with scripts from $PS_SHARED_REPO\033[0m"
 
-# Do we need to use a http_proxy?
-[ $http_proxy ] && echo -e "\033[1;36mUsing $http_proxy as http_proxy\033[0m"
-
-# Configure APT
-if [ -d ${PS_SHARED_REPO}/distribution/debian/build-host-files/apt.conf.d ]; then
-    echo -e "\033[1;36mConfiguring APT with files from build-host-files/apt.conf.d\033[0m"
-    cp -R ${PS_SHARED_REPO}/distribution/debian/build-host-files/apt.conf.d/ /etc/apt/apt.conf.d/
-fi
-
 # Add contrib and backport repositories
 echo -e "\033[1;36mAdding contrib and backports repositories.\033[0m"
 sed -i 's| main$| main contrib|' /etc/apt/sources.list
@@ -29,10 +20,10 @@ fi
 # Add a repository mirror if defined and make it the prefered source
 if ! grep -q "$MIRROR" /etc/apt/sources.list; then
     echo -e "\033[1;36mConfiguring Debian repository mirror.\033[0m"
-    cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/sources.list.d/local-repo.list /etc/apt/sources.list.d/
-    sed -i "s|::MIRROR::|${MIRROR}|" /etc/apt/sources.list.d/local-repo.list
-    cat /etc/apt/sources.list >> /etc/apt/sources.list.d/local-repo.list
-    mv /etc/apt/sources.list.d/local-repo.list /etc/apt/sources.list
+    cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/sources.list.d/local-debian-mirror.list /etc/apt/sources.list.d/
+    sed -i "s|::MIRROR::|${MIRROR}|" /etc/apt/sources.list.d/local-debian-mirror.list
+    cat /etc/apt/sources.list >> /etc/apt/sources.list.d/local-debian-mirror.list
+    mv /etc/apt/sources.list.d/local-debian-mirror.list /etc/apt/sources.list
     export MIRROR="${MIRROR}"
 fi
 
@@ -47,13 +38,24 @@ apt-get autoremove -y
 # Setup build environment
 mkdir -p /var/cache/pbuilder/hook.d/
 echo "# empty file" > /var/cache/pbuilder/hook.d/C99empty
-cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/pbuilderrc.root /root/.pbuilderrc
-cp ${PS_SHARED_REPO}/distribution/debian/build-host-files/scripts/cowbuilder-setup /root/
+cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/pbuilderrc.root /root/.pbuilderrc
+cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/scripts/cowbuilder-setup /root/
 
 # Create cowbuilder chroot
-for distro in jessie stretch; do
+for distro in stretch; do
     export DIST="${distro}"
     /root/cowbuilder-setup
     chmod 777 /var/cache/pbuilder/result/$DIST
+
+    # Add our local dev repository
+    echo -en "\033[1;36mAdding local perfSONAR packages repo to snapshot chroots\033[0m"
+    for PSREPO in 4.2 4.3; do
+        for ARCH in $ARCHES; do
+            echo -n " ... ${PSREPO} for ${ARCH}"
+            cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/sources.list.d/local-dev-repo.list /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/
+            sed -i "s|::DIST::|${DIST}|" /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/local-dev-repo.list
+        done
+    done
+    echo -e ".\033[1;36m Done!\033[0m"
 done
 

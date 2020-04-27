@@ -24,12 +24,16 @@ case ${pkg} in
         exit
         ;;
 
-    python-psycopg2)
+    python-psycopg2|python-radix)
         echo "$pkg doesn't exist here for RPM, we won't check its version."
         exit
         ;;
 
-    drop-in|jq|python-icmperror|python-jsontemplate|python-pyjq|python2-jsonschema|python2-pyrsistent)
+    jq)
+        RPM_VERSION=`awk '/ actual_version / {print $3}' $pkg/$pkg.spec`
+        ;;
+
+    drop-in|python-icmperror|python-jsontemplate|python-jsonschema|python-pyjq|python-pyrsistent)
         RPM_VERSION=`awk '/^Version:/ {print $2}' $pkg/$pkg.spec`
         ;;
 

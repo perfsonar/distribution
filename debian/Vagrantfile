@@ -27,7 +27,9 @@ Vagrant.configure("2") do |config|
         build.vm.hostname = "d9-build-ps"
 
         # Add a second disk to contain the pbuilder chroot
-        secondDisk = "vagrant-build-host-secondDisk.vdi"
+        # TODO: would even be better to put the disk image inside the VM directory, how?
+        diskPath = `vboxmanage list systemproperties | awk '/^Default machine folder:/ { printf "%s",$4 }'`
+        secondDisk = diskPath + "/vagrant-build-host-secondDisk.vdi"
         unless File.exist?(secondDisk)
             build.vm.provider "virtualbox" do |vb|
                 vb.customize ['createhd', '--filename', secondDisk, '--size', 25 * 1024]
@@ -47,7 +49,7 @@ Vagrant.configure("2") do |config|
             host_pwd = ""
         else
             build.vm.provision "shell", privileged: false, inline: <<-SHELL
-            echo "I don't know which directory to share with the Vagrant host"
+                echo "I don't know which directory to share with the Vagrant host"
             SHELL
             exit
         end
@@ -55,7 +57,6 @@ Vagrant.configure("2") do |config|
         # Install all requirements and perform initial setup
         build.vm.provision "shell", path: "build-host-d9-setup.sh", env: {
             "host_pwd" => host_pwd,
-            "http_proxy" => ENV["http_proxy"],
             "SHARED_REPO_PREFIX" => "/vagrant",
             "ARCHES" => ENV["PS_DEB_ARCHES"],
             "MIRROR" => ENV["PS_DEB_MIRROR"]
@@ -72,17 +73,16 @@ Vagrant.configure("2") do |config|
         build.trigger.before :ssh do |trigger|
             trigger.info = "Setting up environment variables in the build machine."
             trigger.run_remote = {
-            env: {"http_proxy" => ENV["http_proxy"], "host_pwd" => host_pwd},
-            inline: <<-SHELL 
+                env: {"host_pwd" => host_pwd},
+                inline: <<-SHELL 
 host_repo_path=${host_pwd%/distribution/debian}
 repo_name=${host_repo_path##*/}
 echo "# Define some environment variables useful for perfSONAR builds
-export http_proxy=$http_proxy
 export PS_REPO=$repo_name" > /etc/profile.d/ps-local.sh
 SHELL
             }
         end
-  
+       
         # Message the user
         build.vm.post_up_message = <<MSG
 -------------------------------------------
@@ -96,6 +96,7 @@ vagrant ssh
 The resulting packages will be in a directory called result/
 at the same level as this git repository.
 MSG
+
     end
 
     # A second VM to test package installation
@@ -103,6 +104,43 @@ MSG
         # Set a meaningful hostname
         install.vm.hostname = "d9-install-ps"
         
-        # TODO: install the packages built in the build.vm to confirm all is fine
+        if Vagrant.has_plugin?("vagrant-vbguest")
+            # Don't allow upgrades; the box has what it has.
+            config.vbguest.auto_update = false
+        end
+
+        # We share the toplevel directory of all repositories
+        if File.file?("../.git")
+            # We're in a submodule, the toplevel is 3 levels up
+            install.vm.synced_folder "../../..", "/vagrant", type: "virtualbox"
+            host_pwd = ENV["PWD"]
+        elsif File.directory?("../.git")
+            # We're in the main distribution repo, the toplevel is 2 levels up
+            install.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
+            host_pwd = ""
+        else
+            install.vm.provision "shell", privileged: false, inline: <<-SHELL
+            echo "I don't know which directory to share with the Vagrant host"
+            SHELL
+            exit
+        end
+
+        # Install all requirements and perform initial setup
+        install.vm.provision "shell", path: "install-host-d9-setup.sh", env: {
+            "host_pwd" => host_pwd,
+            "SHARED_REPO_PREFIX" => "/vagrant",
+            "MIRROR" => ENV["PS_DEB_MIRROR"]
+        }
+ 
+        # Message the user
+        install.vm.post_up_message = <<MSG
+-------------------------------------------
+perfSONAR Debian install machine is ready!
+You can use it with the following commands:
+
+vagrant ssh d9-install-ps
+./ps-install-test $PACKAGE (minor|patch)
+-------------------------------------------
+MSG
     end
 end

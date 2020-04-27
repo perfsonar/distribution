@@ -1,0 +1,3 @@
+# Use our own local perfSONAR packages repository
+deb [trusted=yes] file:/var/cache/pbuilder/result/::DIST:: ./
+

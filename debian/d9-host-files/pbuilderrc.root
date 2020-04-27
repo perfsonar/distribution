@@ -1,0 +1,26 @@
+# Our hooks directory
+HOOKDIR="/var/cache/pbuilder/hook.d"
+
+# Special needs to build perfSONAR packages, we need the network and /dev/shm
+USENETWORK=yes
+USESHM=yes
+
+# Specific settings when building for multiple distros
+if [ -n "${DIST}" ]; then
+    DISTRIBUTION="$DIST"
+    # Mount result directory to solve dependencies locally, when needed
+    BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
+    # Dist specific aptcache
+    APTCACHE="/var/cache/pbuilder/$DIST/aptcache/"
+    if [ "${DIST}" == "stretch" ]; then
+        # The default dependency resolver (aptitude) is segfaulting on foreign architectures
+        # for OWAMP builds, we use apt instead (which is not available in jessie).
+        PBUILDERSATISFYDEPENDSCMD=/usr/lib/pbuilder/pbuilder-satisfydepends-apt
+    fi
+fi
+
+# We need some extra settings and packages in the cowbuilder chroot to make it faster
+APTCACHEHARDLINK=no
+EXTRAPACKAGES="apt-utils eatmydata"
+export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}libeatmydata.so"
+
