@@ -1,26 +1,62 @@
 #!/usr/bin/env bash
 
-# This script will try to install a new perfSONAR package
-# And will use the perfsonar-snapshot repository to get dependencies
+# Usage info
+show_help() {
+    cat << EOF
+    Usage: ${0##*/} [-f] [REPO] [PACKAGE]
+    This script will try to install a locally built perfSONAR [PACKAGE]
+    and will be using packages out of perfsonar-[REPO]-snapshot to solve
+    dependencies.
 
-# We need to have package full name
+    The only [REPO] names being recognised are 'patch' or 'minor' (which is
+    anything other than 'patch').
+
+    This script will run some commands with sudo, the current user need to
+    be granted access.
+
+    Arguments:
+        -f: force installation even if [PACKAGE] is not found locally
+
+    Examples:
+        ./ps-install-test minor pscheduler-server
+EOF
+}
+
+# Initialisations
+
+# Parsing options
+while getopts "f" OPT; do
+    case $OPT in
+        f) force=true ;;
+        '?')
+            show_help >&2
+            exit 1 ;;
+    esac
+done
+shift $((OPTIND-1))
+
+# We need a repository type: minor or patch
 if [ $1 ]; then
-    PKG=$1
-else
-    echo "We need a package name as first arg."
-    exit 1
-fi
-
-# And a repository type: minor or patch
-if [ $2 ]; then
-    REPO=$2
+    REPO=$1
 else
     echo "We need a repo name (patch or minor) as second arg."
+    echo
+    show_help >&2
     exit 1
 fi
 
-# Check the package is existing locally
-if [ ! -f /vagrant/result/${PKG}_* ]; then
+# And we need to have package full name (without version number)
+if [ $2 ]; then
+    PKG=$2
+else
+    echo "We need a package name as first arg."
+    echo
+    show_help >&2
+    exit 1
+fi
+
+# Check the package is existing locally or if we force installation
+if [ -z $force ] && ! compgen -G "/vagrant/result/${PKG}_*" > /dev/null; then
     echo "I cannot see any $PKG in the local repo at /vagrant/result/"
     exit 1
 fi

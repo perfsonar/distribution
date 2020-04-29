@@ -90,7 +90,7 @@ perfSONAR Debian build machine is ready!
 You can use it with the following commands:
 
 vagrant ssh
-./ps-cowbuilder-build $PS_REPO
+./ps-cowbuilder-build [PS_REPO]
 -------------------------------------------
 
 The resulting packages will be in a directory called result/
@@ -108,6 +108,8 @@ MSG
             # Don't allow upgrades; the box has what it has.
             config.vbguest.auto_update = false
         end
+
+        install.vm.network "private_network", ip: "10.0.0.100"
 
         # We share the toplevel directory of all repositories
         if File.file?("../.git")
@@ -139,7 +141,10 @@ perfSONAR Debian install machine is ready!
 You can use it with the following commands:
 
 vagrant ssh d9-install-ps
-./ps-install-test $PACKAGE (minor|patch)
+./ps-install-test (minor|patch) [PACKAGE]
+
+Machine is connected to internal network at
+  10.0.0.100
 -------------------------------------------
 MSG
     end
