@@ -103,11 +103,9 @@ MSG
         # Set a meaningful hostname
         install.vm.hostname = "d9-install-ps"
         
-        if Vagrant.has_plugin?("vagrant-vbguest")
-            # Don't allow upgrades; the box has what it has.
-            config.vbguest.auto_update = false
-        end
-
+        # For the install machine, we want a Debian 9 plain image
+        install.vm.box = "debian/stretch64"
+        
         install.vm.network "private_network", ip: "10.0.0.100"
 
         # We share the toplevel directory of all repositories
