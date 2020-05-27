@@ -4,10 +4,15 @@
 # It can be run subsequently to update an existing setup, but then all the
 # perfSONAR related chroot will be deleted and recreated anew.
 
+# It accepts the following env vars:
+# $MIRROR: A debian repository mirror to use (can be empty)
+# $ARCHES: A list of architectures to build packages for (can be empty, then all perfSONAR known architectures will be built)
+# $SHARED_REPO_PREFIX: TODO: do we really need it?
+
 # Get repo/package name and build root of shared repo
-[ -v host_pwd ] || host_pwd=`pwd`
-host_repo_path=${host_pwd%/distribution/debian}
-export PS_SHARED_REPO=${SHARED_REPO_PREFIX}${host_repo_path}
+base_repo_path=`dirname "$0"`
+base_repo_path=${base_repo_path%/distribution/debian}
+export PS_SHARED_REPO=${SHARED_REPO_PREFIX}${base_repo_path}
 echo -e "\033[1;36mPreparing build environment with scripts from $PS_SHARED_REPO\033[0m"
 
 # Add contrib and backport repositories

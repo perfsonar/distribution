@@ -56,7 +56,6 @@ Vagrant.configure("2") do |config|
 
         # Install all requirements and perform initial setup
         build.vm.provision "shell", path: "build-host-d9-setup.sh", env: {
-            "host_pwd" => host_pwd,
             "SHARED_REPO_PREFIX" => "/vagrant",
             "ARCHES" => ENV["PS_DEB_ARCHES"],
             "MIRROR" => ENV["PS_DEB_MIRROR"]
