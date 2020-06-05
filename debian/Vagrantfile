@@ -12,19 +12,83 @@ ENV["LC_ALL"] = "C"
 # If not set, will default to the Vagrant Box image we use
 #ENV["PS_DEB_MIRROR"] = "http://debian/debian"
 
-Vagrant.configure("2") do |config|
-    # Set box to Debian Contrib 9 image (see https://app.vagrantup.com/debian/ )
-    config.vm.box = "debian/contrib-stretch64"
+# Testing hosts
+# Official Debian boxes from https://app.vagrantup.com/debian/
+# Official Ubuntu boxes from https://app.vagrantup.com/ubuntu/
+testing_hosts=[
+    {
+        :hostname => "d9-install-ps",
+        :ip => "10.0.0.100",
+        :box => "debian/stretch64",
+        :vbguest_auto_update => "true"
+    },
+    {
+        :hostname => "u16-install-ps",
+        :ip => "10.0.0.101",
+        :box => "ubuntu/xenial64",
+        # Under FreeBSD host, Host IO cache **need** to be enabled or box crashes after some time
+        :customize => [
+            {
+                :cmd => "storagectl",
+                :args => [
+                    {
+                        :option => "--name",
+                        :value => "SCSI"
+                    },
+                    {
+                        :option => "--hostiocache",
+                        :value => "on"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        :hostname => "u18-install-ps",
+        :ip => "10.0.0.102",
+        :box => "ubuntu/bionic64",
+        # Under FreeBSD host, Host IO cache **need** to be enabled or box crashes after some time
+        :customize => [
+            {
+                :cmd => "storagectl",
+                :args => [
+                    {
+                        :option => "--name",
+                        :value => "SCSI"
+                    },
+                    {
+                        :option => "--hostiocache",
+                        :value => "on"
+                    }
+                ]
+            }
+        ]
+    }
+]
 
-    # Increase RAM for better performances
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+# More info at https://docs.vagrantup.com.
+
+Vagrant.configure("2") do |config|
+    # Increase RAM for better performance
     config.vm.provider "virtualbox" do |vb|
         vb.memory = 2048
+    end
+
+    if Vagrant.has_plugin?("vagrant-vbguest")
+        # Don't allow upgrades; the box has what it has.
+        config.vbguest.auto_update = false
     end
 
     # Build a build machine as the default
     config.vm.define "d9-build-ps", primary: true, autostart: true do |build|
         # Set a meaningful hostname
         build.vm.hostname = "d9-build-ps"
+        # We use Debian-contrib to have backports and the contrib repo enabled
+        build.vm.box = "debian/contrib-stretch64"
 
         # Add a second disk to contain the pbuilder chroot
         # TODO: would even be better to put the disk image inside the VM directory, how?
@@ -38,21 +102,9 @@ Vagrant.configure("2") do |config|
             build.vm.provision "shell", path: "vagrant-build-host-d9-secondDisk.sh"
         end
 
-        # We share the toplevel directory of all repositories
-        if File.file?("../.git")
-            # We're in a submodule, the toplevel is 3 levels up
-            build.vm.synced_folder "../../..", "/vagrant", type: "virtualbox"
-            host_pwd = ENV["PWD"]
-        elsif File.directory?("../.git")
-            # We're in the main distribution repo, the toplevel is 2 levels up
-            build.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
-            host_pwd = ""
-        else
-            build.vm.provision "shell", privileged: false, inline: <<-SHELL
-                echo "I don't know which directory to share with the Vagrant host"
-            SHELL
-            exit
-        end
+        # We should have the /distribution/ repo at the same level as all other pS repo
+        # We share the toplevel directory of all repositories (i.e. 2 levels up)
+        build.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
 
         # Install all requirements and perform initial setup
         build.vm.provision "shell", path: "build-host-d9-setup.sh", env: {
@@ -62,26 +114,11 @@ Vagrant.configure("2") do |config|
         }
         # A second step is needed for the setup
         build.vm.provision "shell", path: "vagrant-build-host-d9-user-setup.sh", privileged: false, run: "always", env: {
-            "host_pwd" => host_pwd,
             "SHARED_REPO_PREFIX" => "/vagrant",
             "VAGRANT_USER_DOTFILES" => ENV["VAGRANT_USER_DOTFILES"],
             "VAGRANT_USER_DOTFILES_DEPLOY" => ENV["VAGRANT_USER_DOTFILES_DEPLOY"]
         }
 
-        # Install useful environment variables to build packages whenever we ssh to it
-        build.trigger.before :ssh do |trigger|
-            trigger.info = "Setting up environment variables in the build machine."
-            trigger.run_remote = {
-                env: {"host_pwd" => host_pwd},
-                inline: <<-SHELL 
-host_repo_path=${host_pwd%/distribution/debian}
-repo_name=${host_repo_path##*/}
-echo "# Define some environment variables useful for perfSONAR builds
-export PS_REPO=$repo_name" > /etc/profile.d/ps-local.sh
-SHELL
-            }
-        end
-       
         # Message the user
         build.vm.post_up_message = <<MSG
 -------------------------------------------
@@ -89,7 +126,7 @@ perfSONAR Debian build machine is ready!
 You can use it with the following commands:
 
 vagrant ssh
-./ps-cowbuilder-build [PS_REPO]
+./ps-cowbuilder-build -b 4.3.0 [PS_REPO]
 -------------------------------------------
 
 The resulting packages will be in a directory called result/
@@ -98,51 +135,43 @@ MSG
 
     end
 
-    # A second VM to test package installation
-    config.vm.define "d9-install-ps", primary: false, autostart: false do |install|
-        # Set a meaningful hostname
-        install.vm.hostname = "d9-install-ps"
-        
-        # For the install machine, we want a Debian 9 plain image
-        install.vm.box = "debian/stretch64"
-        
-        install.vm.network "private_network", ip: "10.0.0.100"
+    # Testing VM to test package installation
+    testing_hosts.each do |host|
+        config.vm.define host[:hostname], autostart: false do |install_vm|
+            install_vm.vm.box = host[:box]
+            # Local customizations
+            if host[:box_version]
+                install_vm.vm.box_version = host[:box_version]
+            end
+            if Vagrant.has_plugin?("vagrant-vbguest") and host[:vbguest_auto_update]
+                install_vm.vbguest.auto_update = host[:vbguest_auto_update]
+            end
+            if host[:customize]
+                host[:customize].each do |custom|
+                    custom_command = [custom[:cmd], :id]
+                    custom[:args].each do |arg|
+                        custom_command += [arg[:option], arg[:value]]
+                    end
+                    install_vm.vm.provider "virtualbox" do |vb|
+                        vb.customize custom_command
+                    end
+                end
+            end
 
-        # We share the toplevel directory of all repositories
-        if File.file?("../.git")
-            # We're in a submodule, the toplevel is 3 levels up
-            install.vm.synced_folder "../../..", "/vagrant", type: "virtualbox"
-            host_pwd = ENV["PWD"]
-        elsif File.directory?("../.git")
-            # We're in the main distribution repo, the toplevel is 2 levels up
-            install.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
-            host_pwd = ""
-        else
-            install.vm.provision "shell", privileged: false, inline: <<-SHELL
-            echo "I don't know which directory to share with the Vagrant host"
-            SHELL
-            exit
+            install_vm.vm.hostname = host[:hostname]
+            install_vm.vm.network "private_network", ip: host[:ip]
+
+            # We share the toplevel directory of all repositories
+            install_vm.vm.synced_folder "../..", "/vagrant", type: "virtualbox"
+
+            # install all requirements and perform initial setup
+            install_vm.vm.provision "shell", path: "install-host-setup.sh", env: {
+                "SHARED_REPO_PREFIX" => "/vagrant",
+                "install_vm_hostname" => host[:hostname],
+                "install_vm_ip" => host[:ip],
+                "install_vm_box" => host[:box]
+            }
+     
         end
-
-        # Install all requirements and perform initial setup
-        install.vm.provision "shell", path: "install-host-d9-setup.sh", env: {
-            "host_pwd" => host_pwd,
-            "SHARED_REPO_PREFIX" => "/vagrant",
-            "MIRROR" => ENV["PS_DEB_MIRROR"]
-        }
- 
-        # Message the user
-        install.vm.post_up_message = <<MSG
--------------------------------------------
-perfSONAR Debian install machine is ready!
-You can use it with the following commands:
-
-vagrant ssh d9-install-ps
-./ps-install-test (minor|patch) [PACKAGE]
-
-Machine is connected to internal network at
-  10.0.0.100
--------------------------------------------
-MSG
     end
 end

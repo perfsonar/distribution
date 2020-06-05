@@ -9,10 +9,12 @@
 # $ARCHES: A list of architectures to build packages for (can be empty, then all perfSONAR known architectures will be built)
 # $SHARED_REPO_PREFIX: TODO: do we really need it?
 
-# Get repo/package name and build root of shared repo
-base_repo_path=`dirname "$0"`
-base_repo_path=${base_repo_path%/distribution/debian}
-export PS_SHARED_REPO=${SHARED_REPO_PREFIX}${base_repo_path}
+# Get root of shared repo
+if [ "${SHARED_REPO_PREFIX}" ]; then
+    export PS_SHARED_REPO=${SHARED_REPO_PREFIX}
+else
+    export PS_SHARED_REPO="${BASH_SOURCE[0]}"
+fi
 echo -e "\033[1;36mPreparing build environment with scripts from $PS_SHARED_REPO\033[0m"
 
 # Add contrib and backport repositories
@@ -37,7 +39,8 @@ fi
 
 # Install build requirements
 apt-get update
-apt-get install -y git-buildpackage qemu-user-static debootstrap lintian cowbuilder vim eatmydata
+apt-get install -y git-buildpackage qemu-user-static vim eatmydata ubuntu-archive-keyring
+apt-get -t stretch-backports install -y cowbuilder debootstrap lintian
 apt-get autoremove -y
 
 # Setup build environment
@@ -47,7 +50,7 @@ cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/pbuilderrc.root /root/.pb
 cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/scripts/cowbuilder-setup /root/
 
 # Create cowbuilder chroot
-for distro in stretch; do
+for distro in bionic stretch; do
     export DIST="${distro}"
     /root/cowbuilder-setup
     chmod 777 /var/cache/pbuilder/result/$DIST
@@ -56,9 +59,11 @@ for distro in stretch; do
     echo -en "\033[1;36mAdding local perfSONAR packages repo to snapshot chroots\033[0m"
     for PSREPO in 4.2 4.3; do
         for ARCH in $ARCHES; do
-            echo -n " ... ${PSREPO} for ${ARCH}"
-            cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/sources.list.d/local-dev-repo.list /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/
-            sed -i "s|::DIST::|${DIST}|" /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/local-dev-repo.list
+            if [ -d /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/ ]; then
+                echo -n " ... ${PSREPO} for ${ARCH}"
+                cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/sources.list.d/local-dev-repo.list /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/
+                sed -i "s|::DIST::|${DIST}|" /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/local-dev-repo.list
+            fi
         done
     done
     echo -e ".\033[1;36m Done!\033[0m"

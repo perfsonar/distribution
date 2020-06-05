@@ -77,5 +77,6 @@ sudo apt-get update
 
 # Try to do the install
 echo -e "I'm now going to try to install the latest version of \033[1;36m$PKG\033[0m solving dependencies with the \033[1;36m$REPO-snapshot\033[0m repository."
+# Can also be used with DEBIAN_FRONTEND=noninteractive if you want to avoid the pscheduler-server prompts
 sudo apt install $PKG
 

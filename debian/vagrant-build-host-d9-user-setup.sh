@@ -5,10 +5,12 @@
 
 echo -e "\033[1;36mSetting up vagrant user environment.\033[0m"
 
-# Get repo/package name and build root of shared repo
-[ -v host_pwd ] || host_pwd=`pwd`
-host_repo_path=${host_pwd%/distribution/debian}
-export PS_SHARED_REPO=${SHARED_REPO_PREFIX}${host_repo_path}
+# Get root of shared repo
+if [ "${SHARED_REPO_PREFIX}" ]; then
+    export PS_SHARED_REPO=${SHARED_REPO_PREFIX}
+else
+    export PS_SHARED_REPO="${BASH_SOURCE[0]}"
+fi
 
 # Add useful pbuilder hooks
 sudo cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/pbuilder-hook.d/* /var/cache/pbuilder/hook.d/

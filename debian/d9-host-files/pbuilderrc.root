@@ -16,6 +16,9 @@ if [ -n "${DIST}" ]; then
         # The default dependency resolver (aptitude) is segfaulting on foreign architectures
         # for OWAMP builds, we use apt instead (which is not available in jessie).
         PBUILDERSATISFYDEPENDSCMD=/usr/lib/pbuilder/pbuilder-satisfydepends-apt
+    elif [ "${DIST}" == "bionic" ]; then
+        # We need packages from universe
+        COMPONENTS="main universe"
     fi
 fi
 

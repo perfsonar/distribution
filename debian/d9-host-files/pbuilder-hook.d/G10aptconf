@@ -12,7 +12,7 @@ if [ ! -z ${http_proxy} ]; then
     " > /etc/apt/apt.conf.d/30proxy
 fi
 
-if [ ! "${DIST}" = "unstable" ]; then
+if [ "${DIST}" = "unstable" ]; then
     # We want to have the latest security patches
     echo "Adding security.debian.org to the APT sources."
     echo "deb http://security.debian.org ${DIST}/updates main" >> /etc/apt/sources.list
@@ -20,5 +20,13 @@ if [ ! "${DIST}" = "unstable" ]; then
     # And we want to use the backport repo as a last APT source
     echo "Adding ${DIST}-backport to the APT sources."
     echo "deb http://deb.debian.org/debian ${DIST}-backports main" >> /etc/apt/sources.list
+elif [ "${DIST}" = "bionic" ]; then
+    # We want to have the latest security patches
+    echo "Adding ${DIST}-security to the APT sources."
+    echo "deb http://archive.ubuntu.com/ubuntu ${DIST}-security main" >> /etc/apt/sources.list
+
+    # And we want to use the updates repo as a last APT source
+    echo "Adding ${DIST}-updates to the APT sources."
+    echo "deb http://archive.ubuntu.com/ubuntu ${DIST}-updates main" >> /etc/apt/sources.list
 fi
 

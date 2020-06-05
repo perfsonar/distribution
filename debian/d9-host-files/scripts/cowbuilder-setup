@@ -40,26 +40,29 @@ do
         echo -e "Image already exists, we will update it."
         cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
     else
+        if [[ $DIST == bionic ]]; then
+            MIRROR="--mirror http://archive.ubuntu.com/ubuntu"
+        fi
         if [[ $ARCH == amd64 || $ARCH == i386 ]]; then
-            cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
-        elif [[ $DIST == wheezy && $ARCH =~ (arm64|ppc64el) ]]; then
-            echo "There is no $ARCH port for Wheezy"
-        elif [[ $DIST == jessie && $ARCH =~ (arm64|ppc64el) ]]; then
-            echo "There is no more support for $ARCH port for Jessie LTS"
+            DEBOOTSTRAP=""
         else
-            # For the foreign architectures, we use qemu inside the build chroot
-            cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} --debootstrap qemu-debootstrap --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
+            DEBOOTSTRAP="--debootstrap qemu-debootstrap"
+        fi
+        if [[ $DIST == bionic && $ARCH =~ (armel) ]]; then
+            echo "There is no $ARCH port for Bionic"
+        else
+            cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} ${DEBOOTSTRAP} --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
         fi
     fi
 done
 
 # List of perfSONAR release supported per Debian/Ubuntu release
 case $DIST in
-    jessie)
-        PS_REL_LIST="perfsonar-4.1-staging perfsonar-4.1-snapshot"
-        ;;
     stretch)
         PS_REL_LIST="perfsonar-4.2-staging perfsonar-4.2-snapshot perfsonar-4.3-staging perfsonar-4.3-snapshot"
+        ;;
+    bionic)
+        PS_REL_LIST="perfsonar-4.3-staging perfsonar-4.3-snapshot"
         ;;
     *)
         echo "I'm not sure which perfSONAR release is supported for $DIST"
@@ -74,9 +77,7 @@ do
     export TMP_SCRIPT=$(mktemp)
     echo "#!/bin/sh" > ${TMP_SCRIPT}
     echo 'echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup' >> ${TMP_SCRIPT}
-    if [[ "$DIST" == "stretch" ]]; then
-        echo "apt-get install -y gnupg dirmngr" >> ${TMP_SCRIPT}
-    fi
+    echo "apt-get install -y gnupg dirmngr" >> ${TMP_SCRIPT}
     # Add the perfSONAR source list at the top of the list and get the GPG key
     echo "mv /etc/apt/sources.list /tmp" >> ${TMP_SCRIPT}
     echo "echo \"deb ${PS_REPO} ${PS_REL} main\" > /etc/apt/sources.list" >> ${TMP_SCRIPT}
@@ -93,10 +94,8 @@ do
                 ERRS[${#ERRS[*]}]="\n\033[1;32mError executing \033[1;31m${TMP_SCRIPT}\033[1;32m in \033[0m/var/cache/pbuilder/base-${DIST}-${ARCH}-${PS_REL}.cow"
                 echo -e $ERRS[${#ERRS[*]}-1]
             fi
-        elif [[ $DIST == wheezy && $ARCH =~ (arm64|ppc64el) ]]; then
-            echo "There is no $ARCH port for Wheezy"
-        elif [[ $DIST == jessie && $ARCH =~ (arm64|ppc64el) ]]; then
-            echo "There is no more support for $ARCH port for Jessie LTS"
+        elif [[ $DIST == bionic && $ARCH =~ (arm??|ppc64el) ]]; then
+            echo "There is no $ARCH port for Bionic"
         else
             ERRS[${#ERRS[*]}]="\n\033[1;32mCannot create cowbuilder image from \033[0m/var/cache/pbuilder/base-${DIST}-${ARCH}.cow\033[1;32m to \033[1;31m${PS_REL}\033[1;32m because it doesn't exist\033[0m"
             echo -e $ERRS[${#ERRS[*]}-1]
