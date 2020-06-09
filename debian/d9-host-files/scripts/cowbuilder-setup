@@ -61,7 +61,7 @@ case $DIST in
     stretch)
         PS_REL_LIST="perfsonar-4.2-staging perfsonar-4.2-snapshot perfsonar-4.3-staging perfsonar-4.3-snapshot"
         ;;
-    bionic)
+    bionic|buster)
         PS_REL_LIST="perfsonar-4.3-staging perfsonar-4.3-snapshot"
         ;;
     *)
@@ -94,7 +94,7 @@ do
                 ERRS[${#ERRS[*]}]="\n\033[1;32mError executing \033[1;31m${TMP_SCRIPT}\033[1;32m in \033[0m/var/cache/pbuilder/base-${DIST}-${ARCH}-${PS_REL}.cow"
                 echo -e $ERRS[${#ERRS[*]}-1]
             fi
-        elif [[ $DIST == bionic && $ARCH =~ (arm??|ppc64el) ]]; then
+        elif [[ $DIST == bionic && $ARCH =~ (armel) ]]; then
             echo "There is no $ARCH port for Bionic"
         else
             ERRS[${#ERRS[*]}]="\n\033[1;32mCannot create cowbuilder image from \033[0m/var/cache/pbuilder/base-${DIST}-${ARCH}.cow\033[1;32m to \033[1;31m${PS_REL}\033[1;32m because it doesn't exist\033[0m"

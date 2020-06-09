@@ -6,25 +6,23 @@
 echo -e "\033[1;36mSetting up vagrant user environment.\033[0m"
 
 # Get root of shared repo
-if [ "${SHARED_REPO_PREFIX}" ]; then
-    export PS_SHARED_REPO=${SHARED_REPO_PREFIX}
+if [ "${REPO_PREFIX}" ]; then
+    export MY_DIR=${REPO_PREFIX}
 else
-    export PS_SHARED_REPO="${BASH_SOURCE[0]}"
+    export MY_DIR=`dirname "${BASH_SOURCE[0]}"`
 fi
 
 # Add useful pbuilder hooks
-sudo cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/pbuilder-hook.d/* /var/cache/pbuilder/hook.d/
+sudo cp ${MY_DIR}/d9-host-files/pbuilder-hook.d/* /var/cache/pbuilder/hook.d/
 
 # Adding pS building scripts
-cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/pbuilderrc /home/${USER}/.pbuilderrc
-cp ${PS_SHARED_REPO}/distribution/debian/d9-host-files/scripts/ps-cowbuilder-build /home/${USER}/
+cp ${MY_DIR}/d9-host-files/pbuilderrc /home/${USER}/.pbuilderrc
+cp ${MY_DIR}/d9-host-files/scripts/ps-cowbuilder-build /home/${USER}/
 chmod +x /home/${USER}/ps-cowbuilder-build
 
 # Make sure result directory in the Vagrant share is existing
-if [ "${PS_SHARED_REPO}" = "/vagrant" ]; then
-    RESULT_DIR=${PS_SHARED_REPO}/result
-else
-    RESULT_DIR=${PS_SHARED_REPO}/../result
+if [ ! "${RESULT_DIR}" ]; then
+    RESULT_DIR=${MY_DIR}/../../result
 fi
 [ -d ${RESULT_DIR} ] || mkdir -p ${RESULT_DIR}
 

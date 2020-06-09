@@ -12,7 +12,7 @@ if [ ! -z ${http_proxy} ]; then
     " > /etc/apt/apt.conf.d/30proxy
 fi
 
-if [ "${DIST}" = "unstable" ]; then
+if [[ "${DIST}" = "buster" || "${DIST}" = "stretch" ]]; then
     # We want to have the latest security patches
     echo "Adding security.debian.org to the APT sources."
     echo "deb http://security.debian.org ${DIST}/updates main" >> /etc/apt/sources.list
