@@ -41,18 +41,25 @@ do
         cowbuilder --update --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
     else
         if [[ $DIST == bionic ]]; then
-            MIRROR="--mirror http://archive.ubuntu.com/ubuntu"
+            case $ARCH in
+                amd64|i386)
+                    MIRROR="--mirror http://archive.ubuntu.com/ubuntu"
+                    ;;
+                arm64|armhf|ppc64el)
+                    MIRROR="--mirror http://ports.ubuntu.com/"
+                    ;;
+                *)
+                    echo "$ARCH is not supported by Ubuntu."
+                    exit 1
+                    ;;
+            esac
         fi
         if [[ $ARCH == amd64 || $ARCH == i386 ]]; then
             DEBOOTSTRAP=""
         else
             DEBOOTSTRAP="--debootstrap qemu-debootstrap"
         fi
-        if [[ $DIST == bionic && $ARCH =~ (armel) ]]; then
-            echo "There is no $ARCH port for Bionic"
-        else
-            cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} ${DEBOOTSTRAP} --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
-        fi
+        cowbuilder --create --distribution ${DIST} --architecture ${ARCH} ${MIRROR} ${DEBOOTSTRAP} --basepath /var/cache/pbuilder/base-${DIST}-${ARCH}.cow
     fi
 done
 
