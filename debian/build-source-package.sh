@@ -7,7 +7,7 @@
 #
 # It also uses the following environment variables (or Jenkins parameters)
 #   tag: the git tag to build from (ex: 4.0-2.rc1-1)
-#   branch: the git branch to build from (ex: debian/jessie)
+#   branch: the git branch to build from (ex: debian/stretch)
 # If none of these variables/parameters are set, then the script looks for the branch to build
 # in the debian/gbp.conf configuration file.
 

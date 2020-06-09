@@ -15,7 +15,7 @@ if [[ "$DIST" = "" ]]; then
     echo "No distribution field (DIST=) found in the source package (in gbp.conf), are you sure it is a Debian package?"
     echo "I quit."
     exit 1
-elif [[ $DIST =~ (bionic|buster|jessie|stretch) ]]; then
+elif [[ $DIST =~ (bionic|buster|stretch) ]]; then
     echo "I don't know this distribution: $DIST"
     echo "I quit."
     exit 1
@@ -30,11 +30,9 @@ elif [[ "$RELEASE" == "UNRELEASED" ]]; then
     export RELEASE=perfsonar-${BRANCH%.*}-snapshot
 elif [[ "$RELEASE" == "perfsonar-release" ]]; then
     export RELEASE=perfsonar-${BRANCH%.*}-staging
-elif [[ "$RELEASE" == "perfsonar-jessie-staging" ]]; then
-    export RELEASE=perfsonar-4.1-staging
-elif [[ $RELEASE =~ perfsonar-(4.1|4.2|4.3)-(staging|-snapshot) ]]; then
+elif [[ $RELEASE =~ perfsonar-(4.2|4.3)-(staging|-snapshot) ]]; then
     continue
-elif [[ $RELEASE =~ ^perfsonar-(4.1|4.2|4.3)$ ]]; then
+elif [[ $RELEASE =~ ^perfsonar-(4.2|4.3)$ ]]; then
     export RELEASE=perfsonar-${BASH_REMATCH[1]}-staging
 else
     echo "I don't know any perfSONAR repository called $RELEASE."

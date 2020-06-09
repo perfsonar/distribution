@@ -10,16 +10,16 @@ if [ -n "${DIST}" ]; then
     DISTRIBUTION="$DIST"
     # This one doesn't seem to be used by cowbuilder (in Jessie at least), not sure why
     BUILDRESULT="/var/cache/pbuilder/result/$DIST/"
-    # BASETGZ is not used by cowbuilder (--no-targz calls to pbuilder)
-    BASETGZ="`dirname $BASETGZ`/$DIST-base.tgz"
     # Mount result directory to solve dependencies locally, when needed
     BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
     # Dist specific aptcache
     APTCACHE="/var/cache/pbuilder/$DIST/aptcache/"
-    if [ "${DIST}" == "stretch" ]; then
-        # The default dependency resolver (aptitude) is segfaulting on foreign architectures
-        # for OWAMP builds, we use apt instead (which is not available in jessie).
-        PBUILDERSATISFYDEPENDSCMD=/usr/lib/pbuilder/pbuilder-satisfydepends-apt
+    # The default dependency resolver (aptitude) is segfaulting on foreign architectures
+    # for OWAMP builds, we use apt instead.
+    PBUILDERSATISFYDEPENDSCMD=/usr/lib/pbuilder/pbuilder-satisfydepends-apt
+    if [ "${DIST}" == "bionic" ]; then
+        # We need packages from universe
+        COMPONENTS="main universe"
     fi
 fi
 

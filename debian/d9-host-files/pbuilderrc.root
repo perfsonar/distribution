@@ -12,11 +12,10 @@ if [ -n "${DIST}" ]; then
     BINDMOUNTS="/var/cache/pbuilder/result/$DIST"
     # Dist specific aptcache
     APTCACHE="/var/cache/pbuilder/$DIST/aptcache/"
-    if [ "${DIST}" == "stretch" ]; then
-        # The default dependency resolver (aptitude) is segfaulting on foreign architectures
-        # for OWAMP builds, we use apt instead (which is not available in jessie).
-        PBUILDERSATISFYDEPENDSCMD=/usr/lib/pbuilder/pbuilder-satisfydepends-apt
-    elif [ "${DIST}" == "bionic" ]; then
+    # The default dependency resolver (aptitude) is segfaulting on foreign architectures
+    # for OWAMP builds, we use apt instead.
+    PBUILDERSATISFYDEPENDSCMD=/usr/lib/pbuilder/pbuilder-satisfydepends-apt
+    if [ "${DIST}" == "bionic" ]; then
         # We need packages from universe
         COMPONENTS="main universe"
     fi

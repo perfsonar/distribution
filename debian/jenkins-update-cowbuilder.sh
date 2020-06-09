@@ -19,17 +19,10 @@ echo
 # We also take care of cleanup the result directory
 find /var/cache/pbuilder/result/ -atime +30 -exec rm {} \;
 
-# Looking at stretch images
-touch ~/cowbuilder-base-stretch-${architecture}-${DISTRO}-update.lock
-sudo -E DIST=stretch cowbuilder --update --basepath /var/cache/pbuilder/base-stretch-${architecture}-${DISTRO}.cow
-rm ~/cowbuilder-base-stretch-${architecture}-${DISTRO}-update.lock
-
-# Looking at jessie images
-if [[ $architecture =~ (arm64|ppc64el) ]]; then
-    echo "There is no more support for $architecture port for Jessie LTS"
-else
-    touch ~/cowbuilder-base-jessie-${architecture}-${DISTRO}-update.lock
-    sudo -E DIST=jessie cowbuilder --update --basepath /var/cache/pbuilder/base-jessie-${architecture}-${DISTRO}.cow
-    rm ~/cowbuilder-base-jessie-${architecture}-${DISTRO}-update.lock
-fi
+# Loop on all distro we have a build environement
+for distro in buster bionic stretch; do
+    touch ~/cowbuilder-base-${distro}-${architecture}-${DISTRO}-update.lock
+    sudo -E DIST=${distro} cowbuilder --update --basepath /var/cache/pbuilder/base-${distro}-${architecture}-${DISTRO}.cow
+    rm ~/cowbuilder-base-${distro}-${architecture}-${DISTRO}-update.lock
+done
 
