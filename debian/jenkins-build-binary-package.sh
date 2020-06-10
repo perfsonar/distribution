@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # This script build a Debian binary package from a source package
 # It is meant to be run from Jenkins
+#
+# $architecture must be given as a Jenkins configuration parameter
 
 # Get $BUILD_ARCH, $DIST and $RELEASE from the content of the source package
 . ~/distribution/debian/check-release-repo.sh
@@ -8,6 +10,11 @@
 
 if [[ $architecture != amd64 && "$BUILD_ARCH" == "all" ]]; then
     echo "I skip building binary independent package on $architecture"
+    exit 0
+fi
+
+if [[ $DIST == bionic && $architecture =~ (armel) ]]; then
+    echo "There is no $architecture port for Bionic"
     exit 0
 fi
 

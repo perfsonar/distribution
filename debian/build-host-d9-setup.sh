@@ -50,6 +50,9 @@ apt-get autoremove -y
 # Setup build environment
 mkdir -p /var/cache/pbuilder/hook.d/
 echo "# empty file" > /var/cache/pbuilder/hook.d/C99empty
+# We need the no-man-db-rebuild hook to avoid a qemu bug https://github.com/Linutronix/elbe/issues/212
+# This only affects U18 and D10 builds under D9
+cp ${MY_DIR}/d9-host-files/pbuilder-hook.d/D80no-man-db-rebuild /var/cache/pbuilder/hook.d/
 cp ${MY_DIR}/d9-host-files/pbuilderrc.root /root/.pbuilderrc
 cp ${MY_DIR}/d9-host-files/scripts/cowbuilder-setup /root/
 
