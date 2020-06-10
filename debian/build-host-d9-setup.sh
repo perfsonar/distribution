@@ -55,12 +55,13 @@ cp ${MY_DIR}/d9-host-files/scripts/cowbuilder-setup /root/
 
 # Create cowbuilder chroot
 for distro in buster bionic stretch; do
+    echo -e "\n\033[1;36mSetting chroot for ${distro}.\033[0m\n"
     export DIST="${distro}"
     /root/cowbuilder-setup
     chmod 777 /var/cache/pbuilder/result/$DIST
 
     # Add our local dev repository
-    echo -en "\033[1;36mAdding local perfSONAR packages repo to snapshot chroots\033[0m"
+    echo -en "\n\033[1;36mAdding local perfSONAR packages repo to snapshot chroots\033[0m"
     for PSREPO in 4.2 4.3; do
         for ARCH in $ARCHES; do
             if [ -d /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/ ]; then

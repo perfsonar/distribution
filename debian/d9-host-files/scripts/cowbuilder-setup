@@ -50,7 +50,7 @@ do
                     ;;
                 *)
                     echo "$ARCH is not supported by Ubuntu."
-                    exit 1
+                    continue
                     ;;
             esac
         fi
