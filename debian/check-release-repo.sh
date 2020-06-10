@@ -15,7 +15,7 @@ if [[ "$DIST" = "" ]]; then
     echo "No distribution field (DIST=) found in the source package (in gbp.conf), are you sure it is a Debian package?"
     echo "I quit."
     exit 1
-elif [[ $DIST =~ (bionic|buster|stretch) ]]; then
+elif [[ ! $DIST =~ (bionic|buster|stretch) ]]; then
     echo "I don't know this distribution: $DIST"
     echo "I quit."
     exit 1

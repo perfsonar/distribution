@@ -55,7 +55,7 @@ cp ${MY_DIR}/d9-host-files/scripts/cowbuilder-setup /root/
 
 # Create cowbuilder chroot
 for distro in buster bionic stretch; do
-    echo -e "\n\033[1;36mSetting chroot for ${distro}.\033[0m\n"
+    echo -e "\n\033[1;36mSetting up chroot for ${distro}.\n==============================\033[0m\n"
     export DIST="${distro}"
     /root/cowbuilder-setup
     chmod 777 /var/cache/pbuilder/result/$DIST
