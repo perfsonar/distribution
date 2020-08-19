@@ -23,10 +23,7 @@ fi
 
 # Then $RELEASE from changelog
 `tar -JxOf !(*.orig).tar.xz --wildcards debian/changelog '*/debian/changelog' 2>/dev/null | head -1 | sed 's/\(.*\) (\([0-9.]*\).*) \([A-Za-z0-9.-]*\);.*/export PACKAGE_NAME=\1 VERSION=\2 RELEASE=\3/'`
-if [[ "$PACKAGE_NAME" == "iperf3" && "$RELEASE" == "UNRELEASED" ]]; then
-    # Special case
-    export RELEASE=perfsonar-4.2-snapshot
-elif [[ "$RELEASE" == "UNRELEASED" ]]; then
+if [[ "$RELEASE" == "UNRELEASED" ]]; then
     export RELEASE=perfsonar-${BRANCH%.*}-snapshot
 elif [[ "$RELEASE" == "perfsonar-release" ]]; then
     export RELEASE=perfsonar-${BRANCH%.*}-staging
