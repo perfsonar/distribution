@@ -67,13 +67,36 @@ for distro in buster bionic stretch; do
     echo -en "\n\033[1;36mAdding local perfSONAR packages repo to snapshot chroots\033[0m"
     for PSREPO in 4.2 4.3; do
         for ARCH in $ARCHES; do
-            if [ -d /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/ ]; then
+            SLISTD=/var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/
+            if [ -d ${SLISTD} ]; then
                 echo -n " ... ${PSREPO} for ${ARCH}"
-                cp ${MY_DIR}/d9-host-files/sources.list.d/local-dev-repo.list /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/
-                sed -i "s|::DIST::|${DIST}|" /var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-snapshot.cow/etc/apt/sources.list.d/local-dev-repo.list
+                cp ${MY_DIR}/d9-host-files/sources.list.d/local-dev-repo.list ${SLISTD}
+                sed -i "s|::DIST::|${DIST}|" ${SLISTD}/local-dev-repo.list
             fi
         done
     done
+
+    if [ "${DIST}" == "stretch" ]; then
+        # Add backports repository for 4.3 builds
+        echo -en "\n\033[1;36mAdding stretch-backports repo to stretch chroots\033[0m"
+        for PSREPO in 4.3; do
+            for ARCH in $ARCHES; do
+                for REPTYPE in snapshot staging; do
+                    SLIST=/var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-${REPTYPE}.cow/etc/apt/sources.list
+                    APTPREF=/var/cache/pbuilder/base-${DIST}-${ARCH}-perfsonar-${PSREPO}-${REPTYPE}.cow/etc/apt/preferences.d
+                    if ! grep -q "stretch-backports main" ${SLIST}; then
+                        echo "deb http://deb.debian.org/debian stretch-backports main" >> ${SLIST}
+                    fi
+                    if [ -d ${APTPREF} ]; then
+                        cp ${MY_DIR}/d9-host-files/preferences.d/stretch-backports ${APTPREF}
+                    fi
+                    echo -n " ... ${PSREPO}-${REPTYPE} for ${ARCH}"
+                done
+            done
+        done
+    fi
+
     echo -e ".\033[1;36m Done!\033[0m"
 done
+
 

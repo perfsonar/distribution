@@ -1,0 +1,5 @@
+# We want golang-go from stretch-backports (needed by ethr)
+Package: golang-*
+Pin: release n=stretch-backports
+Pin-Priority: 990
+
