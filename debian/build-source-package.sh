@@ -142,6 +142,14 @@ if [ "$pscheduler_dir_level" ]; then
                     git archive -o ../${package}_${upstream_version}.orig.tar.gz HEAD
                 fi
             else
+                # We build the upstream tag from the Debian tag by, see https://github.com/perfsonar/project/wiki/Versioning :
+                # - removing the leading debian/distro prefix
+                # - removing the ending -1 debian-version field
+                # - transforming any ~x.b1 beta relnum to -x.b1
+                UPSTREAM_TAG=${DEBIAN_TAG##*\/}
+                UPSTREAM_TAG=${UPSTREAM_TAG%-*}
+                UPSTREAM_TAG=${UPSTREAM_TAG/~/-}
+
                 if git tag -l | grep "^${UPSTREAM_TAG}$" ; then
                     git archive -o ../${package}_${upstream_version}.orig.tar.gz ${UPSTREAM_TAG}
                 elif git tag -l | grep "^v${UPSTREAM_TAG}$" ; then
