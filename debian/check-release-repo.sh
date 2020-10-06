@@ -28,7 +28,7 @@ if [[ "$RELEASE" == "UNRELEASED" ]]; then
 elif [[ "$RELEASE" == "perfsonar-release" ]]; then
     export RELEASE=perfsonar-${BRANCH%.*}-staging
 elif [[ $RELEASE =~ perfsonar-(4.2|4.3)-(staging|-snapshot) ]]; then
-    continue
+    export RELEASE=$RELEASE
 elif [[ $RELEASE =~ ^perfsonar-(4.2|4.3)$ ]]; then
     export RELEASE=perfsonar-${BASH_REMATCH[1]}-staging
 else
