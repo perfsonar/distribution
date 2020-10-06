@@ -30,7 +30,7 @@ if [ ! -f debian/gbp.conf ]; then
         # It seems we're right, now, are we at the correct location?
         cd ${package}
         if ! [ -d debian ]; then
-            cd */debian
+            cd */debian 2>/dev/null || cd ${package}/debian
             pscheduler_dir_level=".."
         else
             pscheduler_dir_level="."
@@ -121,7 +121,7 @@ if [ "$pscheduler_dir_level" ]; then
         # And forward kludge again
         cd ${package_dir}
         if ! [ -d debian ]; then
-            cd */debian/..
+            cd */debian/.. 2>/dev/null || cd ${package}/debian/..
         fi
         # We remove the -pkgrel suffix
         upstream_version=`dpkg-parsechangelog | sed -n 's/Version: \(.*\)-[^-]*$/\1/p'`
