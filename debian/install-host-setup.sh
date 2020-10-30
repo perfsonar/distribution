@@ -13,7 +13,7 @@ echo -e "\033[1;36mPreparing install environment with scripts from $PS_SHARED_RE
 
 # Make sure we have some swap enabled, this is not the case with the official Ubuntu images
 if [ `free | awk '/^Swap:/ { print $2 }'` == 0 ]; then
-    fallocate -l 1G /swapfile
+    fallocate -l 2G /swapfile
     chmod 600 /swapfile
     mkswap /swapfile
     swapon /swapfile
