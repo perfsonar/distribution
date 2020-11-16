@@ -24,7 +24,7 @@ case ${pkg} in
         exit
         ;;
 
-    python-psycopg2|python-radix|python-pyjq-u18|python-pyrsistent-u18)
+    python-psycopg2|python-radix|python-pyjq-*|python-pyrsistent-*)
         echo "$pkg doesn't exist here for RPM, we won't check its version."
         exit
         ;;
