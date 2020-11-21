@@ -65,11 +65,8 @@ done
 
 # List of perfSONAR release supported per Debian/Ubuntu release
 case $DIST in
-    stretch)
-        PS_REL_LIST="perfsonar-4.2-staging perfsonar-4.2-snapshot perfsonar-4.3-staging perfsonar-4.3-snapshot"
-        ;;
-    bionic|buster)
-        PS_REL_LIST="perfsonar-4.3-staging perfsonar-4.3-snapshot"
+    bionic|buster|stretch)
+        PS_REL_LIST="perfsonar-4.4-staging perfsonar-4.4-snapshot perfsonar-4.3-staging perfsonar-4.3-snapshot"
         ;;
     *)
         echo "I'm not sure which perfSONAR release is supported for $DIST"

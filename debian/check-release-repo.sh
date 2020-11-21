@@ -27,9 +27,9 @@ if [[ "$RELEASE" == "UNRELEASED" ]]; then
     export RELEASE=perfsonar-${BRANCH%.*}-snapshot
 elif [[ "$RELEASE" == "perfsonar-release" ]]; then
     export RELEASE=perfsonar-${BRANCH%.*}-staging
-elif [[ $RELEASE =~ perfsonar-(4.2|4.3)-(staging|-snapshot) ]]; then
+elif [[ $RELEASE =~ perfsonar-(4.2|4.3|4.4|5.0)-(staging|-snapshot) ]]; then
     export RELEASE=$RELEASE
-elif [[ $RELEASE =~ ^perfsonar-(4.2|4.3)$ ]]; then
+elif [[ $RELEASE =~ ^perfsonar-(4.2|4.3|4.4|5.0)$ ]]; then
     export RELEASE=perfsonar-${BASH_REMATCH[1]}-staging
 else
     echo "I don't know any perfSONAR repository called $RELEASE."
