@@ -33,7 +33,7 @@ case ${pkg} in
         RPM_VERSION=`awk '/ actual_version / {print $3}' $pkg/$pkg.spec`
         ;;
 
-    drop-in|ethr|python-icmperror|python-jsontemplate|python-jsonschema|python-ntplib|python-pyjq|python-pyrsistent|s3-benchmark)
+    drop-in|ethr|python-py-amqp|python-icmperror|python-jsontemplate|python-jsonschema|python-ntplib|python-pyjq|python-pyrsistent|python-vine|s3-benchmark)
         RPM_VERSION=`awk '/^Version:/ {print $2}' $pkg/$pkg.spec`
         ;;
 
