@@ -95,7 +95,7 @@ if [ -z $DEBIAN_TAG ]; then
     fi
     dch -b --distribution=UNRELEASED --newversion=${new_version} -- 'SNAPSHOT autobuild for '${current_version}' via Jenkins'
     GBP_OPTS="$GBP_OPTS --git-upstream-tree=HEAD"
-    dpkgsign="-k8968F5F6"
+    dpkgsign="-k8849D1E81FFEC1081CF66DE31C8650438968F5F6"
 else
     # If we have a tag, we take the source from the git tag
     echo -e "\nBuilding release package of ${PKG} from ${DEBIAN_TAG}.\n"
@@ -143,18 +143,18 @@ if [ "$pscheduler_dir_level" ]; then
                     # We have a minor package and its orig tarball in the repository
                     for suffix in gz xz bz2; do
                         if [ -f ../${package}_${file_upstream_version#*:}*.orig.tar.${suffix} ]; then
-                            # We just must create a new one with the snapshot version number
-                            ln ../${package}_${file_upstream_version#*:}*.orig.tar.${suffix} ../${package}_${upstream_version#*:}.orig.tar.${suffix}
+                            # We just rename it with the snapshot version number
+                            mv ../${package}_${file_upstream_version#*:}*.orig.tar.${suffix} ../${package}_${upstream_version#*:}.orig.tar.${suffix}
                         fi
                     done
                 else
-                    git archive -o ../${package}_${upstream_version}.orig.tar.gz HEAD
+                    git archive -o ../${package}_${upstream_version}.orig.tar.gz --prefix ${package}-${upstream_version}/ HEAD
                 fi
             else
                 if git tag -l | grep "^${UPSTREAM_TAG}$" ; then
-                    git archive -o ../${package}_${upstream_version}.orig.tar.gz ${UPSTREAM_TAG}
+                    git archive -o ../${package}_${upstream_version}.orig.tar.gz --prefix ${package}-${upstream_version}/ ${UPSTREAM_TAG}
                 elif git tag -l | grep "^v${UPSTREAM_TAG}$" ; then
-                    git archive -o ../${package}_${upstream_version}.orig.tar.gz v${UPSTREAM_TAG}
+                    git archive -o ../${package}_${upstream_version}.orig.tar.gz --prefix ${package}-${upstream_version}/ v${UPSTREAM_TAG}
                 else
                     echo "Cannot build tarball ${package}_${upstream_version}.orig.tar.gz from upstream tag ${UPSTREAM_TAG}"
                     exit 1

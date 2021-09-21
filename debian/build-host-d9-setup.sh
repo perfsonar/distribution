@@ -75,6 +75,7 @@ for distro in buster bionic stretch; do
             fi
         done
     done
+    echo -e ".\033[1;36m Done!\033[0m"
 
     if [ "${DIST}" == "stretch" ]; then
         # Add backports repository
