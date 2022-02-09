@@ -95,7 +95,7 @@ if [ -z $DEBIAN_TAG ]; then
     fi
     dch -b --distribution=UNRELEASED --newversion=${new_version} -- 'SNAPSHOT autobuild for '${current_version}' via Jenkins'
     GBP_OPTS="$GBP_OPTS --git-upstream-tree=HEAD"
-    dpkgsign="-k8968F5F6"
+    dpkgsign="-k8849D1E81FFEC1081CF66DE31C8650438968F5F6"
 else
     # If we have a tag, we take the source from the git tag
     echo -e "\nBuilding release package of ${PKG} from ${DEBIAN_TAG}.\n"
