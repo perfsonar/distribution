@@ -1,0 +1,3 @@
+#BEGIN-distrobox
+0 * * * *	__DEST__/update-rsync
+#END-distrobox

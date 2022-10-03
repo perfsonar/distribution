@@ -1,0 +1,90 @@
+#!/bin/sh -e
+#
+# Refresh the list of authorized mirror IPs, reconfigure rsync and
+# restart if necessary.
+#
+# Usage: update-rsync PATH-TO-REPOSITORY
+
+
+REPOSITORY=$1
+if [ ! -d "${REPOSITORY}" ]
+then
+    echo "Can't find repository at ${REPOSITORY}" 1>&2
+    exit 1
+fi
+
+WHEREAMI=$(dirname $0)
+
+TMPBASE=$(mktemp -d)
+
+cleanup()
+{ 
+    rm -rf "${TMPBASE}"
+}
+trap cleanup EXIT
+
+#
+# Build the IP list
+#
+
+IP_LIST="${TMPBASE}/ip-list"
+IP_LIST_IN="${IP_LIST}.in"
+
+
+# TODO: Get the actual IP list from wherever.  Need to account for
+# when we already have an installed config and this operation fails.
+
+if [ ! -e "${IP_LIST_IN}" -o ! -s "${IP_LIST_IN}" ]
+then
+    # If nothing came of it, punt.
+    printf "127.0.0.1\n::1\n" > "${IP_LIST_IN}"
+fi
+
+# Rsyncd wants everything on one comma-separated line.
+sed -e ':a; N; $!ba; s/\n/,/g' -e 's/\n//' "${IP_LIST_IN}" \
+    | tr -d '\n' \
+    > "${IP_LIST}"
+
+
+#
+# Build the Rsyncd configuration
+#
+
+BUILT_RSYNCD_CONF="${TMPBASE}/rsyncd.conf"
+m4 \
+    "-D__IP_LIST__=${IP_LIST}" \
+    "-D__REPOSITORY__=${REPOSITORY}/current" \
+    "${WHEREAMI}/rsyncd.conf.m4" \
+    > "${BUILT_RSYNCD_CONF}"
+
+
+#
+# If there's a difference between what was produced and what's
+# installed, install the new one and restart rsyncd.
+#
+
+RSYNCD_CONF="/etc/rsyncd.conf"
+
+if [ -e "${RSYNCD_CONF}" ]
+then
+    RESULT=0
+    diff "${BUILT_RSYNCD_CONF}" "${RSYNCD_CONF}" > /dev/null || RESULT=$?
+else
+    # Not present means install it.
+    RESULT=1
+fi
+
+case "${RESULT}" in
+    0)
+	true  # No difference
+	;;
+    1)
+	cp "${BUILT_RSYNCD_CONF}" "${RSYNCD_CONF}"
+	chmod 644 "${RSYNCD_CONF}"
+	systemctl restart rsyncd
+	;;
+    *)
+	echo "Diff of rsyncd configuration failed." 1>&2
+	exit 1
+	;;
+esac

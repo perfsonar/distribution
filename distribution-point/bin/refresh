@@ -1,0 +1,62 @@
+#!/bin/sh -e
+#
+# Refresh the archive from its source and put it into production.
+#
+
+
+WHEREAMI=$(dirname $0)
+DATE=$(date +%Y-%m-%dT%H:%M:%S)
+
+DISTROBOX="${WHEREAMI}/../../distrobox"
+VAR="${WHEREAMI}/../../var"
+
+if [ ! -d "${VAR}" ]
+then
+    echo "Unable to find var directory ${VAR}" 1>&2
+    exit 1
+fi
+
+PRODUCTION=$(cd "${VAR}/current" && pwd)
+BUILD="${VAR}/${DATE}"
+
+cleanup()
+{ 
+    rm -rf "${BUILD}"
+    rm -rf "${PREVIOUS}"
+    rm -rf "${IP_LIST}"
+}
+trap cleanup EXIT
+
+rm -rf "${BUILD}"
+mkdir -p "${BUILD}"
+
+# Copy production so we only download the deltas.
+rsync --archive --delete --exclude "/index" "${PRODUCTION}/" "${BUILD}"
+
+# TODO: Sync from signing point
+
+# Incorporate the index
+INDEX="${DISTROBOX}/index"
+BUILD_INDEX="${BUILD}/index"
+rm -rf "${BUILD_INDEX}"
+mkdir -p  "${BUILD_INDEX}"
+rsync --archive --delete "${INDEX}/" "${BUILD_INDEX}"
+
+
+# Shift the newly-downloaded directory over to being current
+
+PREVIOUS="${PRODUCTION}-previous"
+
+# If this fails, nothing happened
+mv "${PRODUCTION}" "${PREVIOUS}"
+
+If this fails, the mv above needs to be undone.
+RESULT=0
+mv "${BUILD}" "${PRODUCTION}" || RESULT=$?
+if [ "${RESULT}" -ne 0 ]
+then
+    echo "Failed to place new directory.  Reverting to old." 1>&2
+    # At this point, it's best effort.
+    mv "${PREVIOUS}" "${PRODUCTION}"
+    exit 1
+fi

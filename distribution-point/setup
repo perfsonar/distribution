@@ -1,0 +1,114 @@
+#!/bin/sh -e
+
+NAME=distpoint
+WHEREAMI=$(dirname $0)
+
+
+if [ "$(id -u)" -ne 0 ]
+then
+    echo "This program must be run as root." 1>&2
+    exit 1
+fi
+
+
+section()
+{
+    echo
+    echo
+    echo ----- "$@" | tr a-z A-Z
+    echo
+}
+
+
+section Prerequisites
+
+dnf -y install \
+    anacron \
+    certbot \
+    httpd \
+    m4 \
+    make \
+    rsync
+
+
+
+section User Account
+
+ACCOUNT="${NAME}"
+
+id "${ACCOUNT}" >/dev/null 2>&1 \
+    || useradd -c "Distro Box" "${ACCOUNT}"
+
+ACCOUNT_HOME=$(getent passwd "${ACCOUNT}" | cut -d : -f 6)
+
+DISTROBOX="${ACCOUNT_HOME}/${NAME}" 
+mkdir -p "${DISTROBOX}"
+rsync --archive --delete "${WHEREAMI}/" "${DISTROBOX}"
+
+VAR="${ACCOUNT_HOME}/var"
+mkdir -p "${VAR}"
+
+CURRENT="${VAR}/current"
+
+# Don't do this if there's already stuff there
+if [ ! -e "${CURRENT}" ]
+then
+    rm -rf "${CURRENT}"
+    ln -s "${DISTROBOX}/sample" "${CURRENT}"
+fi
+
+chown -R "${ACCOUNT}.${ACCOUNT}" "${ACCOUNT_HOME}"
+chmod 711 "${ACCOUNT_HOME}"
+
+
+
+section Firewall
+
+dnf -y install firewalld
+systemctl enable --now firewalld
+firewall-cmd --permanent --zone=public --add-service=https
+firewall-cmd --permanent --zone=public --add-service=ssh
+firewall-cmd --permanent --zone=public --add-port=873/tcp
+firewall-cmd --reload
+
+
+
+section Apache
+
+APACHE_CONF=/etc/httpd/conf.d
+
+rm -f "${APACHE_CONF}/welcome.conf"
+rm -f "${APACHE_CONF}/userdir.conf"
+
+cat > "${APACHE_CONF}/000-perfsonar-distro-box.conf" <<EOF
+DocumentRoot ${VAR}/current
+
+<Directory ${VAR}/current>
+  Options Indexes FollowSymLinks
+  AllowOverride All
+  Require all granted
+  HeaderName index/header.html
+  ReadmeName index/footer.html
+</Directory>
+EOF
+
+# TODO: Configure certbot.
+
+systemctl reload-or-restart httpd
+
+
+section Rsync
+dnf install -y rsync-daemon
+# Start with an inert configuration
+"${WHEREAMI}/rsync/update-rsync" "${VAR}"
+systemctl enable --now rsyncd
+
+
+
+section Cron
+
+sed \
+    -e "s/__NAME__/${NAME}/g" \
+    -e "s/__ACCOUNT__/${ACCOUNT}/g" \
+    "${DISTROBOX}/etc/crontab"\
+    | crontab -u "${ACCOUNT}"

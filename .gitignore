@@ -1,6 +1,1 @@
-# Ignore Vagrant cache files
-.vagrant/
-# Ignore vagrant secondDisk
-debian/vagrant-build-host-secondDisk.vdi
-# Ignore local apt proxy settings
-debian/build-host-files/apt.conf.d/30proxy
+*~

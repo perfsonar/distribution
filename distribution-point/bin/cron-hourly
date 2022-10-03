@@ -1,0 +1,8 @@
+#!/bin/sh -e
+#
+# Things Done Every Hour
+#
+
+# TODO: Update the mirror
+
+exit 0

@@ -1,0 +1,7 @@
+#
+# Crontab for __ACCOUNT__
+#
+
+0 0 * * *	$HOME/__NAME__/bin/cron/cron-midnight
+0 1 * * *	$HOME/__NAME__/bin/cron/cron-daily
+0 * * * *	$HOME/__NAME__/bin/cron/cron-hourly
