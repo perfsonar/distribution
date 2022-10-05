@@ -37,7 +37,10 @@ IP_LIST_IN="${IP_LIST}.in"
 if [ ! -e "${IP_LIST_IN}" -o ! -s "${IP_LIST_IN}" ]
 then
     # If nothing came of it, punt.
-    printf "127.0.0.1\n::1\n" > "${IP_LIST_IN}"
+    cat > "${IP_LIST_IN}" <<EOF
+127.0.0.1
+::1
+EOF
 fi
 
 # Rsyncd wants everything on one comma-separated line.

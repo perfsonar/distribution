@@ -1,1 +1,42 @@
-<h1>This is the header.</a>
+<style>
+  body {
+      background-color: white;
+      color: black;
+      font-family: Sans-serif;
+  }
+  .titlebar {
+      background-color: #1b6522;
+      color: white;
+  }
+  .path {
+      font-family: monospace;
+      font-size: 12pt;
+  }
+  .odd {
+      background-color: #f0f0f0;
+      font-family: monospace;
+  }
+  .even {
+      background-color: #ffffff;
+      font-family: monospace;
+  }
+  .indexcolsize {
+      text-align: right;
+  }
+</style>
+<table border="0" cellpadding="8pt" width="100%" class="titlebar">
+  <tr>
+    <td align="left">
+      <a href="https://www.perfsonar.net"><img height="48pt" src="/index/perfsonar-logo-white-full.svg"></a>
+    </td>
+    <td align="right" valign="middle">
+      <p style="font-weight: bold; font-size: 24pt; color: white;">Software Repository</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="middle" valign="middle">
+      <p class="path"><!--#echo var="REQUEST_URI" --></p>
+    </td>
+  </tr>
+</table>
+<br/>

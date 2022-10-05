@@ -4,7 +4,7 @@
 
 # uid = nobody
 # gid = nobody
-# use chroot = yes
+use chroot = no
 max connections = 20
 # pid file = /var/run/rsyncd.pid
 # exclude = lost+found/

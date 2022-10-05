@@ -28,6 +28,7 @@ allow authorized sites to mirror it.
 Configure a system as follows:
 
  * AlmaLinux 8 or AlmaLinux 9 minimal.
+ * Set the hostname to the same as its FQDN.
  * Install `git`.
  * Configure a user account that can become the superuser.
  * Do not configure the firewall; the setup process will do it.

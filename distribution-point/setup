@@ -24,8 +24,6 @@ section Prerequisites
 
 dnf -y install \
     anacron \
-    certbot \
-    httpd \
     m4 \
     make \
     rsync
@@ -50,11 +48,13 @@ mkdir -p "${VAR}"
 
 CURRENT="${VAR}/current"
 
-# Don't do this if there's already stuff there
-if [ ! -e "${CURRENT}" ]
+# Install a sample if there's nothing in place already or what's there
+# is the sample.
+if [ -e "${CURRENT}/.sample" -o ! -e "${CURRENT}" ]
 then
     rm -rf "${CURRENT}"
-    ln -s "${DISTROBOX}/sample" "${CURRENT}"
+    cp -r "${DISTROBOX}/sample" "${CURRENT}"
+    cp -r "${DISTROBOX}/index" "${CURRENT}"
 fi
 
 chown -R "${ACCOUNT}.${ACCOUNT}" "${ACCOUNT_HOME}"
@@ -62,10 +62,21 @@ chmod 711 "${ACCOUNT_HOME}"
 
 
 
+section fail2ban
+
+dnf -y install firewalld fail2ban
+
+cp "${WHEREAMI}/fail2ban/01-rsyncd.conf" /etc/fail2ban/jail.d
+cp "${WHEREAMI}/fail2ban/rsyncd.conf" /etc/fail2ban/filter.d
+
+systemctl enable fail2ban
+systemctl reload-or-restart fail2ban
+
+
 section Firewall
 
-dnf -y install firewalld
 systemctl enable --now firewalld
+
 firewall-cmd --permanent --zone=public --add-service=https
 firewall-cmd --permanent --zone=public --add-service=ssh
 firewall-cmd --permanent --zone=public --add-port=873/tcp
@@ -74,6 +85,8 @@ firewall-cmd --reload
 
 
 section Apache
+
+dnf -y install httpd
 
 APACHE_CONF=/etc/httpd/conf.d
 
@@ -84,23 +97,98 @@ cat > "${APACHE_CONF}/000-perfsonar-distro-box.conf" <<EOF
 DocumentRoot ${VAR}/current
 
 <Directory ${VAR}/current>
-  Options Indexes FollowSymLinks
+  Options Indexes FollowSymlinks
   AllowOverride All
   Require all granted
-  HeaderName index/header.html
-  ReadmeName index/footer.html
+  HeaderName /index/header.html
+  ReadmeName /index/footer.html
+  IndexOptions FancyIndexing HTMLTable SuppressIcon SuppressDescription VersionSort
+  IndexIgnore index
 </Directory>
 EOF
 
-# TODO: Configure certbot.
+
+# Apache needs its document root in the same security context as the
+# default.
+CONTEXT=$(ls -ld --context /var/www | awk '{ print $5 }')
+chcon -R "${CONTEXT}" "${VAR}"
+
+section Certbot
+
+dnf -y install certbot python3-certbot-apache
+
+FQDN=$(hostname)
+echo Hostname is ${FQDN}
+
+# Certbot will add its own.
+rm -f /etc/httpd/conf.d/ssl.conf
+
+# Setup requires HTTP temporarily
+
+firewall-cmd --permanent --zone=public --add-service=http
+firewall-cmd --reload
+
+HTTP_CONF="${APACHE_CONF}/000-certbot-http.conf"
+cat > "${HTTP_CONF}" <<EOF
+
+<VirtualHost *:80>
+    ServerName ${FQDN}
+    DocumentRoot /var/www/html
+    ServerAlias ${FQDN}
+    ErrorLog /dev/null
+</VirtualHost>
+EOF
 
 systemctl reload-or-restart httpd
 
+# This won't register twice.
+certbot \
+    --agree-tos \
+    --apache \
+    --domains "${FQDN}" \
+    --email 'perfsonar-developer@internet2.edu' \
+    -n \
+
+
+firewall-cmd --permanent --zone=public --remove-service=http
+firewall-cmd --reload
+rm -rf "${HTTP_CONF}"
+
+# TODO: This is fragile, but Certbot doesn't have a way to customize
+# it.
+sed \
+    -i \
+    -e "s|DocumentRoot[[:space:]].*\$|DocumentRoot ${CURRENT}|g" \
+    /etc/httpd/conf.d/000-certbot-http-le-ssl.conf
+
+systemctl reload-or-restart httpd
+
+CERTBOT_TAG=certbot
+
+# Remove any previously-added entries
+crontab -l 2>/dev/null \
+    | sed -e "/^#BEGIN-${CERTBOT_TAG}\$/,/^#END-${CERTBOT_TAG}\$/d" \
+    | crontab
+
+
+crontab -l 2>/dev/null \
+    | (cat \
+	   && echo "#BEGIN-${CERTBOT_TAG}" \
+	   && echo "0 1 * * * certbot renew --quiet --apache --renew-hook 'systemctl restart httpd'" \
+	   && echo "#END-${CERTBOT_TAG}") \
+    | crontab
+
+
 
 section Rsync
+
 dnf install -y rsync-daemon
+
 # Start with an inert configuration
 "${WHEREAMI}/rsync/update-rsync" "${VAR}"
+
+setsebool -P rsync_export_all_ro 1
+
 systemctl enable --now rsyncd
 
 
@@ -111,4 +199,4 @@ sed \
     -e "s/__NAME__/${NAME}/g" \
     -e "s/__ACCOUNT__/${ACCOUNT}/g" \
     "${DISTROBOX}/etc/crontab"\
-    | crontab -u "${ACCOUNT}"
+    | crontab -u "${ACCOUNT}" -
