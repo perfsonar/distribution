@@ -13,6 +13,9 @@ then
     exit 1
 fi
 
+# Absolutize the path
+REPOSITORY=$(cd "${REPOSITORY}" && pwd)
+
 WHEREAMI=$(dirname $0)
 
 TMPBASE=$(mktemp -d)

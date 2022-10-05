@@ -54,7 +54,8 @@ if [ -e "${CURRENT}/.sample" -o ! -e "${CURRENT}" ]
 then
     rm -rf "${CURRENT}"
     cp -r "${DISTROBOX}/sample" "${CURRENT}"
-    cp -r "${DISTROBOX}/index" "${CURRENT}"
+    mkdir -p "${CURRENT}/index"
+    rsync --archive --delete "${DISTROBOX}/index/" "${CURRENT}/index"
 fi
 
 chown -R "${ACCOUNT}.${ACCOUNT}" "${ACCOUNT_HOME}"
@@ -100,10 +101,21 @@ DocumentRoot ${VAR}/current
   Options Indexes FollowSymlinks
   AllowOverride All
   Require all granted
-  HeaderName /index/header.html
-  ReadmeName /index/footer.html
+
   IndexOptions FancyIndexing HTMLTable SuppressIcon SuppressDescription VersionSort
   IndexIgnore index
+
+  HeaderName /index/header.html
+  ReadmeName /index/footer.html
+
+  # Enable SSI for .html files (or use .shtml files instead)
+  AddOutputFilter INCLUDES .html
+
+  # Parse files for SSI
+  Options +Indexes +IncludesNOEXEC
+
+  SetEnvIf Request_URI ^/(?:(.+)/)?\$ DIR=/\$1
+
 </Directory>
 EOF
 
