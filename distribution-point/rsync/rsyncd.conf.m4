@@ -20,7 +20,7 @@ use chroot = yes
 [perfsonar]
 	path = __REPOSITORY__
 	comment = perfSONAR Software Repository
-	exclude = index/
+	exclude = .site-index/
 	list = yes
 	hosts allow = include(__IP_LIST__)
 	hosts deny = *

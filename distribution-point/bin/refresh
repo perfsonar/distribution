@@ -31,13 +31,13 @@ rm -rf "${BUILD}"
 mkdir -p "${BUILD}"
 
 # Copy production so we only download the deltas.
-rsync --archive --delete --exclude "/index" "${PRODUCTION}/" "${BUILD}"
+rsync --archive --delete --exclude "/.site-index" "${PRODUCTION}/" "${BUILD}"
 
 # TODO: Sync from signing point
 
 # Incorporate the index
 INDEX="${DISTROBOX}/index"
-BUILD_INDEX="${BUILD}/index"
+BUILD_INDEX="${BUILD}/.site-index"
 rm -rf "${BUILD_INDEX}"
 mkdir -p  "${BUILD_INDEX}"
 rsync --archive --delete "${INDEX}/" "${BUILD_INDEX}"

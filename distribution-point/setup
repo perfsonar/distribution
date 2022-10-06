@@ -54,8 +54,8 @@ if [ -e "${CURRENT}/.sample" -o ! -e "${CURRENT}" ]
 then
     rm -rf "${CURRENT}"
     cp -r "${DISTROBOX}/sample" "${CURRENT}"
-    mkdir -p "${CURRENT}/index"
-    rsync --archive --delete "${DISTROBOX}/index/" "${CURRENT}/index"
+    mkdir -p "${CURRENT}/.site-index"
+    rsync --archive --delete "${DISTROBOX}/index/" "${CURRENT}/.site-index"
 fi
 
 chown -R "${ACCOUNT}.${ACCOUNT}" "${ACCOUNT_HOME}"
@@ -103,10 +103,10 @@ DocumentRoot ${VAR}/current
   Require all granted
 
   IndexOptions FancyIndexing HTMLTable SuppressIcon SuppressDescription VersionSort
-  IndexIgnore index
+  IndexIgnore .site-index
 
-  HeaderName /index/header.html
-  ReadmeName /index/footer.html
+  HeaderName /.site-index/header.html
+  ReadmeName /.site-index/footer.html
 
   # Enable SSI for .html files (or use .shtml files instead)
   AddOutputFilter INCLUDES .html
