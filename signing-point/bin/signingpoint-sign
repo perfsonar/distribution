@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+echo "TODO: Not implemented yet." 1>&2
+false

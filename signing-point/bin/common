@@ -1,0 +1,69 @@
+#
+# Distropoint Common Variables and Functions
+#
+
+WHOAMI=$(basename $0)
+WHEREAMI=$(dirname $0)
+TOP="${WHEREAMI}/.."
+VAR="${TOP}/var"
+
+
+warn()
+{
+    if [ "$#" -ne 0 ]
+    then
+	echo "$@" 1>&2
+    else
+	cat >&2
+    fi
+}
+
+die()
+{
+    warn "$@"
+    exit 1
+}
+
+
+
+LOCK="${VAR}/${WHOAMI}.lock"
+
+lock()
+{
+    TIME_LEFT=120
+    
+    if [ -e "${LOCK}" ]
+    then
+	warn Waiting up to ${TIME_LEFT} seconds for lock held by PID $(cat "${LOCK}")
+    fi
+
+    while [ -e "${LOCK}" -a "${TIME_LEFT}" -gt 0 ]
+    do
+	TIME_LEFT=$((${TIME_LEFT} - 1))
+	sleep 1
+    done
+    [ "${TIME_LEFT}" -gt 0 ] || die "Timed out waiting for lock."
+    
+    echo "$$" > "${LOCK}"
+}
+
+unlock()
+{
+    if [ -f "${LOCK}" ]
+    then
+	LOCK_PID=$(cat "${LOCK}")
+	if [ "${LOCK_PID}" = "$$" ]
+	then
+	    rm -f "${LOCK}"
+	fi
+    fi
+}
+
+
+
+
+common_cleanup()
+{
+    unlock
+}
+trap common_cleanup EXIT

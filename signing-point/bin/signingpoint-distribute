@@ -1,0 +1,100 @@
+#!/bin/sh -e
+
+. $(dirname $0)/common
+
+if [ "$#" -ne 5 ]
+then
+    die <<EOF
+Usage: ${WHOAMI} [OPTIONS] PATH-TO-REPO PACKAGE-FORMAT DISTRO ARCHITECTURE VERSION
+EOF
+fi
+
+REPO_IN=$1
+[ -d "${REPO_IN}" ] || die "${REPO_IN}: No such directory"
+
+PACKAGE_FORMAT=$2
+DISTRO=$3
+ARCHITECTURE=$4
+VERSION=$5
+
+# TODO: Options:
+#  --replace    Force replacement
+REPLACE=false
+#  --tag-as   Make a symlink to this version
+TAG_AS=latest
+#  --overlay  Overlay contents of REPO_IN onto directory
+OVERLAY=false
+
+lock
+
+#
+# Build a copy of the repository to work on
+#
+
+REPO="${VAR}/repo"
+# In case there isn't one yet...
+mkdir -p "${REPO}"
+
+REPO_BUILD="${REPO}-build"
+
+rm -rf "${REPO_BUILD}"
+mkdir -p "${REPO_BUILD}"
+
+rsync --archive --delete "${REPO}/" "${REPO_BUILD}"
+
+#
+# Put the new files into the copy
+#
+
+distribute_rpm()
+{
+    
+    ARCH_DIR="${REPO_BUILD}/${PACKAGE_FORMAT}/${DISTRO}/${ARCHITECTURE}"
+    REPO_DIR="${ARCH_DIR}/${VERSION}"
+
+    if [ -e "${REPO_DIR}" ]
+    then
+	die "${DISTRO} ${ARCHITECTURE} ${VERSION} already exists.  Use --replace to replace it."
+    fi 
+
+    mkdir -p "${REPO_DIR}"
+    rsync --archive --delete "${REPO_IN}/" "${REPO_DIR}"
+
+    if [ -n "${TAG_AS}" ]
+    then
+	TAG="${ARCH_DIR}/${TAG_AS}"
+	rm -rf "${TAG}"
+	ln -s "${VERSION}" "${TAG}"
+    fi    
+}
+
+case "${PACKAGE_FORMAT}" in
+    rpm)
+	distribute_rpm
+	;;
+    deb)
+	die "TODO: Not implemented yet."
+	;;
+    *)
+	die "Unsupported package format ${PACKAGE_FORMAT}"
+	;;
+esac
+
+
+#
+# Put the copy into production
+#
+
+REPO_OLD="${REPO}-old"
+
+# Replace any detritus with prejudice.
+rm -rf "${REPO_OLD}"
+mv "${REPO}" "${REPO_OLD}"
+
+mv "${REPO_BUILD}" "${REPO}"
+
+# TODO:  These should be in the EXIT trap
+rm -rf "${REPO_OLD}"
+rm -rf "${REPO_BUILD}"
+
+tree $VAR

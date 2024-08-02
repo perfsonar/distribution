@@ -1,0 +1,100 @@
+# List of hosts authorized to mirror from the distribution points.
+
+# List mirrors in this format:
+#
+#     # Name:     [Name of institution]
+#     # Contact:  [Email address of techncal contact]
+#     # URL:      [URL of mirror.  Optional.]
+#     [Names(s) or IP(s) of host allowed to sync from the distribution points]
+#
+# Example:
+#
+#     # Name:     Example University
+#     # Contact:  Department of Smoke and Mirrors <perfsonar-mirror@example.edu>
+#     # URL:      https://mirror.example.edu/perfsonar/
+#     mirror-in-1.example.edu
+#     mirror-in-2.example.edu
+
+# Name:     Example University
+# Contact:  Department of Smoke and Mirrors <perfsonar-mirror@example.edu>
+# URL:      https://mirror.example.edu/perfsonar/
+mirror-in-1.example.edu
+mirror-in-2.example.edu
+
+
+
+
+# -----------------------------------------------------------------------------
+
+# Hosts for development and testing.
+
+127.0.0.1
+::1
+
+# Internet2's perfSONAR development farm
+# perfSONAR Development Farm
+163.253.37.192/27
+163.253.37.160/27
+2001:0468:2620:0030::/64
+2001:0468:2620:0031::/64
+
+
+
+
+# History and other info from I2 TSG:
+
+# 195.220 is a shib mirror in france
+# 198.129 & 2001:400 are esnet for perfsonar, i think
+# mirror.chpc.utah.edu (155.101.3.219, 2001:1948:414:3::db)
+# clm.net.cen.ct.gov - 67.218.95.33 - software.internet2.edu, on request of zurawski
+# mirror.ancl.hawaii.edu 128.171.104.148 - zurawski
+# 194.71.11.1/255.255.255.128 - ftp.sunet.se - aaron
+# 130.14.24.139 NIH - zurawski
+# 155.232.191.55 - TENET South Africa, added at the request of Mark Feit, tech support Front ticket # 15789454029
+# 2001:4200:fffc::55 - TENET South Africa, added at the request of Mark Feit, tech support Front ticket # 15789454029
+# 67.218.89.100 - added, requested by Mark Feit (2020-06-26, Front #16677868557)
+# 67.218.95.33 and 67.218.95.34 were removed , requested by Mark Feit (2020-06-26, Front #16677868557)
+# 156.40.214.177 and 2607:f220:404:910d::177 - added, requested by Mark Feit (2021-01-28, Front #20648093709)
+#  138.44.164.198, 2001:388:8008:10::8, 138.44.71.134, 2001:388:8008:11::8 - added, requested by Mark Feit (2021-08-25, Front #24450110413)
+
+
+# Authorized IPs:
+
+# 182.255.111.0/27|AARNET
+# 2001:388:1:4066::/64|AARNET
+# 138.44.164.198/32|AARNET|act-dksn-mirror1.aarnet.net.au
+# 138.44.71.134/32|AARNET|vic-pmla-mirror1.aarnet.net.au
+# 2001:388:8008:10::8|AARNET|act-dksn-mirror1.aarnet.net.au
+# 2001:388:8008:11::8|AARNET|vic-pmla-mirror1.aarnet.net.au
+# 205.189.33.66|CANARIE
+# 67.218.89.100|Connecticut State Government|cen-vpn.net.cen.ct.gov
+# 198.129.224.35|ESnet|linux.mirrors.es.net
+# 2001:400:201:6::35|ESnet|linux.mirrors.es.net
+# 198.129.224.34|ESnet|linux-src.es.net
+# 62.40.104.208/29|GEANT
+# 2001:798:bb:1e::2|GEANT
+# 2001:798:bb:1e::4|GEANT
+# 195.220.94.128/25|GIP RENATER FR
+# 134.158.69.171|IN2P3 FR|ccpntc11.in2p3.fr
+# 207.75.164.0/23|Internet2
+# 207.75.165.179|Internet2
+# 198.108.5.0/24|Internet2
+# 130.14.24.139|NIH|mongodbdev11.be-md.ncbi.nlm.nih.gov
+# 130.14.24.254|NIH|irbdev21.be-md.ncbi.nlm.nih.gov
+# 156.40.214.177|NIH|parrot.cit.nih.gov
+# 2607:f220:404:910d::177|NIH|parrot.cit.nih.gov
+# 46.30.209.75|ONE.com|eth0.mirror1.net.one.com
+# 46.30.209.77|ONE.com|eth1.mirror1.net.one.com
+# 2a02:2350::209:75|ONE.com|eth0.mirror1.net.one.com
+# 2a02:2350::209:77|ONE.com|eth1.mirror1.net.one.com
+# 66.244.1.50|Shasta County Office of Education|mirror01.shastacoe.net
+# 194.71.11.0/24|SUNet
+# 155.232.191.208|TENET ZA|mirror-old.mirror.ac.za
+# 155.232.191.55|TENET ZA|mirror-cpt-01.mirror.ac.za
+# 2001:4200:fffc::55|TENET|mirror-cpt-01.mirror.ac.za
+# 128.194.165.95|Texas A&M|dc-repo.tamu.edu
+# 128.171.104.148|University of Hawaii|old-mirror.ancl.hawaii.edu
+# 2001:1948:414:3::db|UEN
+# 155.101.3.219|University of Utah
+# 2001:1948:417:5::20|University of Utah|mirror.chpc.utah.edu
+# 204.99.128.20|University of Utah|mirror.chpc.utah.edu

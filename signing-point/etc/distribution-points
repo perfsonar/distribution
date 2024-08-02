@@ -1,0 +1,28 @@
+# List of hosts and IPs allowed to sync from the signing point.
+
+# Loopback
+127.0.0.0/8
+::1
+
+# ESnet
+
+
+# GEANT
+
+
+# Indiana University / GRNOC
+
+
+# Internet2
+
+# perfSONAR Development Farm
+163.253.37.192/27
+163.253.37.160/27
+2001:0468:2620:0030::/64
+2001:0468:2620:0031::/64
+
+
+# RNP
+
+
+# UMich

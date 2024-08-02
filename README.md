@@ -15,6 +15,17 @@ of perfSONAR are signed and made available to the distribution points
 TODO: Write this.
 
 
+### Operation
+
+ * Copy the built repository 
+ * `signingpoint-sign /directory PACKAGE-FORMAT`
+ * `signingpoint-distribute /directory PACKAGE-FORMAT DISTRO ARCHITECTURE VERSION`
+
+```
+$ signingpoint-sign  /path/to/repo rpm
+$ signingpoint-distribute /path/to/repo rpm el8 x86_64 el8 1.2.3 
+```
+
 
 ## Distribution Point
 
